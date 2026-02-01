@@ -13,10 +13,13 @@
   "license": "ISC",
   "dependencies": {
     "@repo/db": "workspace:*",
+    "dockerode": "^4.0.9",
+    "dotenv": "^17.2.3",
     "redis": "^5.10.0"
   },
   "devDependencies": {
+    "@repo/types": "workspace: *",
     "@repo/typescript-config": "workspace:*",
-    "@repo/types": "workspace: *"
+    "@types/dockerode": "^4.0.1"
   }
 }
