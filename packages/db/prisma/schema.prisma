@@ -35,6 +35,19 @@ model Recording {
   fileName      String?
   status        RecordingStatus @default(PENDING)
   errorMetadata Json?
+  transcript    Transcript?
+}
+
+model Transcript {
+  id                       String           @id @default(uuid())
+  recordingId              String           @unique
+  recording                Recording        @relation(fields: [recordingId], references: [id])
+  transcript               String?
+  transcriptWithTimeStamps String?
+  summary                  String?
+  createdAt                DateTime         @default(now())
+  updatedAt                DateTime         @updatedAt
+  status                   TranscriptStatus @default(PENDING)
 }
 
 enum RecordingStatus {
@@ -44,4 +57,10 @@ enum RecordingStatus {
   COMPLETED
   FAILED
   TIMEOUT
+}
+
+enum TranscriptStatus {
+  PENDING
+  COMPLETED
+  FAILED
 }

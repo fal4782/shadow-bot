@@ -5,3 +5,8 @@ export interface JoinMeetingPayload {
   timestamp?: string;
   maxDurationMins?: number;
 }
+
+export interface TranscriptionPayload {
+  recordingId: string;
+  fileName: string;
+}

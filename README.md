@@ -1,135 +1,87 @@
-# Turborepo starter
+# Shadow Bot 🤖
 
-This Turborepo starter is maintained by the Turborepo core team.
+An automated, high-fidelity Google Meet recording, transcription, and summarization platform. Shadow Bot leverages Docker orchestrated containers, Redis-based distributed queueing, and state-of-the-art AI to transform your meetings into actionable knowledge.
 
-## Using this example
+## 🚀 Core Features
 
-Run the following command:
+-   **Isolated Recording**: Spins up ephemeral Docker containers for each meeting, ensuring isolated browser sessions and reliable capture.
+-   **Streaming AI Transcription**: Uses ElevenLabs Scribe v2 with async streaming (`createReadStream`) for memory-efficient, high-fidelity speech-to-text.
+-   **Smart Summarization**: Automatically generates titles and bulleted summaries with timestamps using Google Gemini.
+-   **Distributed Architecture**: Decoupled services (HTTP, Docker Manager, Transcribe Service) communicate via Redis for high scalability.
+-   **Unified Monorepo**: Built with Turborepo and `pnpm` for efficient workspace management.
 
-```sh
-npx create-turbo@latest
+## 🛠 Project Structure
+
+This project is a Turborepo monorepo:
+
+### Apps
+-   `http`: An Express-based API gateway to trigger and manage recording sessions.
+-   `docker-manager`: Orchestrates the lifecycle of recorder containers and manages task handoffs.
+-   `transcribe-service`: A dedicated worker that processes recordings using ElevenLabs and Gemini.
+-   `web`: Next.js dashboard for viewing transcripts and managing recordings.
+
+### Packages
+-   `@repo/db`: Shared Prisma client and schema for centralized postgres storage.
+-   `@repo/types`: Shared TypeScript definitions across all services.
+-   `@repo/typescript-config`: Reusable base `tsconfig.json`.
+
+## 🔄 How It Works (End-to-End Workflow)
+
+1.  **Trigger**: An external request (HTTP POST) hits the `http` service with a Meet link.
+2.  **Queue**: The meeting is registered in the DB and added to the `join_meet_queue` in Redis.
+3.  **Record**: `docker-manager` picks up the task, starts a Docker container that joins the Meet, records the session, and saves a `.webm` file.
+4.  **Handover**: Once the container exits, `docker-manager` pushes a task to the `transcription-queue`.
+5.  **Transcribe**: `transcribe-service` picks up the task, **streams** the audio to ElevenLabs for transcription.
+6.  **Summarize & Save**: The transcript is passed to Gemini for summarization, and all results are updated in the database.
+
+## 📦 Getting Started
+
+### Prerequisites
+-   [pnpm](https://pnpm.io/)
+-   [Docker](https://www.docker.com/)
+-   [Redis](https://redis.io/)
+-   [PostgreSQL](https://www.postgresql.org/)
+
+### Setup
+
+1.  Install dependencies:
+    ```bash
+    pnpm install
+    ```
+
+2.  Configure Environment:
+    Create `.env` files for each service based on the provided `.env.example` files.
+    -   `packages/db/.env`: `DATABASE_URL`
+    -   `apps/transcribe-service/.env`: `ELEVENLABS_API_KEY`, `GEMINI_API_KEY`
+
+3.  Initialize Database:
+    ```bash
+    pnpm --filter @repo/db run db:push
+    ```
+
+### Running the Services
+
+To start the Entire platform in development mode:
+```bash
+pnpm dev
 ```
 
-## What's inside?
-
-This Turborepo includes the following packages/apps:
-
-### Apps and Packages
-
-- `docs`: a [Next.js](https://nextjs.org/) app
-- `web`: another [Next.js](https://nextjs.org/) app
-- `@repo/ui`: a stub React component library shared by both `web` and `docs` applications
-- `@repo/eslint-config`: `eslint` configurations (includes `eslint-config-next` and `eslint-config-prettier`)
-- `@repo/typescript-config`: `tsconfig.json`s used throughout the monorepo
-
-Each package/app is 100% [TypeScript](https://www.typescriptlang.org/).
-
-### Utilities
-
-This Turborepo has some additional tools already setup for you:
-
-- [TypeScript](https://www.typescriptlang.org/) for static type checking
-- [ESLint](https://eslint.org/) for code linting
-- [Prettier](https://prettier.io) for code formatting
-
-### Build
-
-To build all apps and packages, run the following command:
-
-```
-cd my-turborepo
-
-# With [global `turbo`](https://turborepo.dev/docs/getting-started/installation#global-installation) installed (recommended)
-turbo build
-
-# Without [global `turbo`](https://turborepo.dev/docs/getting-started/installation#global-installation), use your package manager
-npx turbo build
-yarn dlx turbo build
-pnpm exec turbo build
+Alternatively, start individual services for debugging:
+```bash
+pnpm --filter http run dev
+pnpm --filter docker-manager run dev
+pnpm --filter transcribe-service run dev
 ```
 
-You can build a specific package by using a [filter](https://turborepo.dev/docs/crafting-your-repository/running-tasks#using-filters):
+## 🧪 Triggering a Recording
 
-```
-# With [global `turbo`](https://turborepo.dev/docs/getting-started/installation#global-installation) installed (recommended)
-turbo build --filter=docs
+To start a recording session via the API:
 
-# Without [global `turbo`](https://turborepo.dev/docs/getting-started/installation#global-installation), use your package manager
-npx turbo build --filter=docs
-yarn exec turbo build --filter=docs
-pnpm exec turbo build --filter=docs
+```bash
+curl -X POST http://localhost:3005/api/v1/join-meeting \
+     -H "Content-Type: application/json" \
+     -d '{"link": "https://meet.google.com/your-meet-id"}'
 ```
 
-### Develop
-
-To develop all apps and packages, run the following command:
-
-```
-cd my-turborepo
-
-# With [global `turbo`](https://turborepo.dev/docs/getting-started/installation#global-installation) installed (recommended)
-turbo dev
-
-# Without [global `turbo`](https://turborepo.dev/docs/getting-started/installation#global-installation), use your package manager
-npx turbo dev
-yarn exec turbo dev
-pnpm exec turbo dev
-```
-
-You can develop a specific package by using a [filter](https://turborepo.dev/docs/crafting-your-repository/running-tasks#using-filters):
-
-```
-# With [global `turbo`](https://turborepo.dev/docs/getting-started/installation#global-installation) installed (recommended)
-turbo dev --filter=web
-
-# Without [global `turbo`](https://turborepo.dev/docs/getting-started/installation#global-installation), use your package manager
-npx turbo dev --filter=web
-yarn exec turbo dev --filter=web
-pnpm exec turbo dev --filter=web
-```
-
-### Remote Caching
-
-> [!TIP]
-> Vercel Remote Cache is free for all plans. Get started today at [vercel.com](https://vercel.com/signup?/signup?utm_source=remote-cache-sdk&utm_campaign=free_remote_cache).
-
-Turborepo can use a technique known as [Remote Caching](https://turborepo.dev/docs/core-concepts/remote-caching) to share cache artifacts across machines, enabling you to share build caches with your team and CI/CD pipelines.
-
-By default, Turborepo will cache locally. To enable Remote Caching you will need an account with Vercel. If you don't have an account you can [create one](https://vercel.com/signup?utm_source=turborepo-examples), then enter the following commands:
-
-```
-cd my-turborepo
-
-# With [global `turbo`](https://turborepo.dev/docs/getting-started/installation#global-installation) installed (recommended)
-turbo login
-
-# Without [global `turbo`](https://turborepo.dev/docs/getting-started/installation#global-installation), use your package manager
-npx turbo login
-yarn exec turbo login
-pnpm exec turbo login
-```
-
-This will authenticate the Turborepo CLI with your [Vercel account](https://vercel.com/docs/concepts/personal-accounts/overview).
-
-Next, you can link your Turborepo to your Remote Cache by running the following command from the root of your Turborepo:
-
-```
-# With [global `turbo`](https://turborepo.dev/docs/getting-started/installation#global-installation) installed (recommended)
-turbo link
-
-# Without [global `turbo`](https://turborepo.dev/docs/getting-started/installation#global-installation), use your package manager
-npx turbo link
-yarn exec turbo link
-pnpm exec turbo link
-```
-
-## Useful Links
-
-Learn more about the power of Turborepo:
-
-- [Tasks](https://turborepo.dev/docs/crafting-your-repository/running-tasks)
-- [Caching](https://turborepo.dev/docs/crafting-your-repository/caching)
-- [Remote Caching](https://turborepo.dev/docs/core-concepts/remote-caching)
-- [Filtering](https://turborepo.dev/docs/crafting-your-repository/running-tasks#using-filters)
-- [Configuration Options](https://turborepo.dev/docs/reference/configuration)
-- [CLI Usage](https://turborepo.dev/docs/reference/command-line-reference)
+---
+Built with ❤️ using Turborepo, Node.js, and AI.

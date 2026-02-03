@@ -1,14 +1,18 @@
 import { createClient } from "redis";
-import type { JoinMeetingPayload } from "@repo/types";
+import type { JoinMeetingPayload, TranscriptionPayload } from "@repo/types";
 import { DockerService } from "./dockerService";
 import { prisma } from "@repo/db/client";
 
 const redisClient = createClient();
+const redisListener = createClient();
 const dockerService = new DockerService();
 
 (async () => {
   try {
-    await redisClient.connect();
+    await Promise.all([
+      redisClient.connect(),
+      redisListener.connect()
+    ]);
   } catch (err) {
     console.error("Redis connection error:", err);
     process.exit(1);
@@ -16,6 +20,7 @@ const dockerService = new DockerService();
 })();
 
 const QUEUE = "join_meet_queue";
+const TRANSCRIPTION_QUEUE = "transcription-queue";
 
 async function sleep(ms: number) {
   return new Promise((resolve) => setTimeout(resolve, ms));
@@ -29,7 +34,7 @@ export async function listenQueue() {
   console.log(`Starting queue listener for "${QUEUE}"`);
   while (true) {
     try {
-      const res = await redisClient.blPop(QUEUE, 0);
+      const res = await redisListener.blPop(QUEUE, 0);
       if (!res) continue;
 
       // redis v4 may return array [key, element] or object { key, element }
@@ -114,6 +119,15 @@ export async function listenQueue() {
                     ...(exitCode !== 0 && { errorMetadata: JSON.stringify({ exitCode, isTimedOut }) })
                   }
                 });
+
+                if (exitCode === 0 && !isTimedOut) {
+                  const transcriptionPayload: TranscriptionPayload = {
+                    recordingId: payload.recordingId,
+                    fileName: `${meetingId}.webm`
+                  };
+                  await redisClient.rPush(TRANSCRIPTION_QUEUE, JSON.stringify(transcriptionPayload));
+                  console.log(`Pushed to ${TRANSCRIPTION_QUEUE} for recording ${payload.recordingId}`);
+                }
               }).catch(async (err: any) => {
                 console.error(`Error waiting for container for recording ${payload.recordingId}:`, err);
                 await prisma.recording.update({
