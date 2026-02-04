@@ -2,6 +2,8 @@ import express from "express";
 import "dotenv/config";
 import cors from "cors";
 import { v1Router } from "./routes/v1";
+import { authMiddleware } from "./middleware/auth";
+import { authRouter } from "./routes/v1/auth";
 
 const app = express();
 
@@ -14,7 +16,12 @@ app.use("/health", (_req, res) => {
   res.status(200).send("OK");
 });
 
-app.use("/api/v1", v1Router);
+app.use("/api/v1/auth", authRouter);
+app.use("/api/v1/status", (_req, res) => {
+  res.json({ status: "API is running" });
+});
+
+app.use("/api/v1", authMiddleware, v1Router);
 
 app.listen(PORT, () => {
   console.log(`HTTP server is running on port ${PORT}`);
