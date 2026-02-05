@@ -1,6 +1,7 @@
 import Docker from "dockerode";
 import type { JoinMeetingPayload } from "@repo/types";
 import path from "path";
+import fs from "fs";
 import dotenv from "dotenv";
 
 dotenv.config();
@@ -13,6 +14,17 @@ export class DockerService {
 
     constructor() {
         this.docker = new Docker();
+        this.ensureRecordingsDirectoryExists();
+    }
+
+    /**
+     * Ensures the recordings directory exists on the host.
+     */
+    private ensureRecordingsDirectoryExists() {
+        if (!fs.existsSync(this.RECORDINGS_HOST_PATH)) {
+            console.log(`Creating recordings directory at: ${this.RECORDINGS_HOST_PATH}`);
+            fs.mkdirSync(this.RECORDINGS_HOST_PATH, { recursive: true });
+        }
     }
 
     /**
