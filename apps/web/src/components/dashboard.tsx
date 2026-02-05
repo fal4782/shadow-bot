@@ -25,7 +25,6 @@ export function Dashboard({ session }: { session: any }) {
   const [activeBotContainerId, setActiveBotContainerId] = useState<
     string | null
   >(null);
-  const [isJoining, setIsJoining] = useState(false);
   const token = session?.accessToken;
 
   // Poll for meeting updates every 5 seconds
@@ -54,11 +53,6 @@ export function Dashboard({ session }: { session: any }) {
       ["PENDING", "ASKING_TO_JOIN", "JOINED"].includes(r.status),
     );
     setActiveBotContainerId(activeRecording ? activeRecording.id : null);
-    setIsJoining(
-      activeRecording
-        ? ["PENDING", "ASKING_TO_JOIN"].includes(activeRecording.status)
-        : false,
-    );
   }, [recordings]);
 
   const [toast, setToast] = useState<{
@@ -224,13 +218,10 @@ export function Dashboard({ session }: { session: any }) {
                     <input
                       value={meetLink}
                       onChange={(e) => handleMeetLinkChange(e.target.value)}
-                      disabled={!!activeBotContainerId}
                       className={`w-full h-14 bg-cream-100 border rounded-xl px-5 pl-12 outline-none transition-all placeholder:text-brown-500 font-medium text-brown-900 ${
                         linkError
                           ? "border-red-500 focus:border-red-600 focus:ring-2 focus:ring-red-500/20"
-                          : activeBotContainerId
-                            ? "border-brown-900/10 opacity-60 cursor-not-allowed"
-                            : "border-brown-900/10 focus:border-terra-600 focus:ring-2 focus:ring-terra-600/20"
+                          : "border-brown-900/10 focus:border-terra-600 focus:ring-2 focus:ring-terra-600/20"
                       }`}
                       placeholder={
                         activeBotContainerId
@@ -251,52 +242,20 @@ export function Dashboard({ session }: { session: any }) {
                         {linkError}
                       </motion.p>
                     )}
-                    {activeBotContainerId && (
-                      <motion.p
-                        initial={{ opacity: 0, y: -5 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        className="text-xs text-terra-600 font-medium flex items-center gap-1"
-                      >
-                        <AlertCircle className="w-3 h-3" />
-                        Only one active bot allowed at a time.
-                      </motion.p>
-                    )}
                   </AnimatePresence>
                 </div>
 
                 <motion.button
-                  whileHover={{ scale: activeBotContainerId ? 1 : 1.02 }}
-                  whileTap={{ scale: activeBotContainerId ? 1 : 0.98 }}
-                  onClick={
-                    activeBotContainerId && isJoining
-                      ? undefined // Disable click during joining
-                      : activeBotContainerId
-                        ? handleStopBot
-                        : handleInvite
-                  }
-                  disabled={
-                    (activeBotContainerId && isJoining) || // Disable completely while joining
-                    (!meetLink && !activeBotContainerId) ||
-                    isDeploying
-                  }
-                  className={`w-full h-14 rounded-xl text-base font-bold transition-all shadow-lg inline-flex items-center justify-center gap-2 ${
-                    activeBotContainerId && !isJoining
-                      ? "bg-linear-to-r from-terra-800 to-terra-900 text-white hover:opacity-90"
-                      : activeBotContainerId && isJoining
-                        ? "bg-gray-300 text-gray-500 cursor-not-allowed shadow-none"
-                        : "bg-linear-to-r from-terra-600 to-terra-700 text-white hover:opacity-90"
-                  } disabled:opacity-50 disabled:cursor-not-allowed`}
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
+                  onClick={handleInvite}
+                  disabled={isDeploying}
+                  className="w-full h-14 rounded-xl text-base font-bold transition-all shadow-lg inline-flex items-center justify-center gap-2 bg-linear-to-r from-terra-600 to-terra-700 text-white hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   {isDeploying ? (
                     <>
                       Launching... <Sparkles className="w-4 h-4 animate-spin" />
                     </>
-                  ) : activeBotContainerId ? (
-                    isJoining ? (
-                      "Bot Joining..."
-                    ) : (
-                      "Stop Active Bot"
-                    )
                   ) : (
                     <>
                       Join Meeting <ArrowRight className="w-4 h-4" />
