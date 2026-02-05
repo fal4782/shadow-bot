@@ -70,89 +70,97 @@ export async function listenQueue() {
             const meetingId = payload.link.split("/").pop()?.split("?")[0] || "unknown";
             const container = await dockerService.startRecorder(payload);
 
-            if (container) {
+            if (!container) {
+              throw new Error("Failed to start recorder: No container returned.");
+            }
+
+            await prisma.recording.update({
+              where: { id: payload.recordingId },
+              data: {
+                fileName: `${meetingId}.webm`,
+              },
+            });
+
+            let isTimedOut = false;
+
+            // Monitor logs for status changes
+            const logStream = await container.logs({
+              follow: true,
+              stdout: true,
+              stderr: true,
+            });
+
+            logStream.on("data", async (chunk: Buffer) => {
+              const log = chunk.toString("utf8");
+              if (
+                log.includes("Bot is still in the 'Asking to join' state") ||
+                (log.includes("Clicked join button") && log.includes("Ask to join"))
+              ) {
+                await prisma.recording.update({
+                  where: { id: payload.recordingId },
+                  data: { status: "ASKING_TO_JOIN" },
+                });
+              } else if (log.includes("Bot has been admitted to the meeting.")) {
+                await prisma.recording.update({
+                  where: { id: payload.recordingId },
+                  data: { status: "JOINED" },
+                });
+              } else if (log.includes("Timed out waiting to join the meeting")) {
+                isTimedOut = true;
+              }
+            });
+
+            // Handle container exit
+            container.wait().then(async (result: any) => {
+              const exitCode = result.StatusCode;
+              console.log(`Container for recording ${payload.recordingId} exited with code ${exitCode}`);
+
               await prisma.recording.update({
                 where: { id: payload.recordingId },
                 data: {
-                  fileName: `${meetingId}.webm`,
-                },
-              });
-
-              let isTimedOut = false;
-
-              // Monitor logs for status changes
-              const logStream = await container.logs({
-                follow: true,
-                stdout: true,
-                stderr: true,
-              });
-
-              logStream.on("data", async (chunk: Buffer) => {
-                const log = chunk.toString("utf8");
-                if (
-                  log.includes("Bot is still in the 'Asking to join' state") ||
-                  (log.includes("Clicked join button") && log.includes("Ask to join"))
-                ) {
-                  await prisma.recording.update({
-                    where: { id: payload.recordingId },
-                    data: { status: "ASKING_TO_JOIN" },
-                  });
-                } else if (log.includes("Bot has been admitted to the meeting.")) {
-                  await prisma.recording.update({
-                    where: { id: payload.recordingId },
-                    data: { status: "JOINED" },
-                  });
-                } else if (log.includes("Timed out waiting to join the meeting")) {
-                  isTimedOut = true;
+                  status: isTimedOut ? "TIMEOUT" : (exitCode === 0 ? "COMPLETED" : "FAILED"),
+                  ...(exitCode !== 0 && { errorMetadata: JSON.stringify({ exitCode, isTimedOut }) })
                 }
               });
 
-              // Handle container exit
-              container.wait().then(async (result: any) => {
-                const exitCode = result.StatusCode;
-                console.log(`Container for recording ${payload.recordingId} exited with code ${exitCode}`);
-
-                await prisma.recording.update({
-                  where: { id: payload.recordingId },
-                  data: {
-                    status: isTimedOut ? "TIMEOUT" : (exitCode === 0 ? "COMPLETED" : "FAILED"),
-                    ...(exitCode !== 0 && { errorMetadata: JSON.stringify({ exitCode, isTimedOut }) })
-                  }
-                });
-
-                if (exitCode === 0 && !isTimedOut) {
-                  const transcriptionPayload: TranscriptionPayload = {
-                    recordingId: payload.recordingId,
-                    fileName: `${meetingId}.webm`
-                  };
-                  await redisClient.rPush(TRANSCRIPTION_QUEUE, JSON.stringify(transcriptionPayload));
-                  console.log(`Pushed to ${TRANSCRIPTION_QUEUE} for recording ${payload.recordingId}`);
-                }
-              }).catch(async (err: any) => {
-                console.error(`Error waiting for container for recording ${payload.recordingId}:`, err);
-                await prisma.recording.update({
-                  where: { id: payload.recordingId },
-                  data: {
-                    status: "FAILED",
-                    errorMetadata: JSON.stringify(err)
-                  }
-                });
-              });
-            }
-            break; // Success, exit retry loop
-          } catch (err) {
-            console.error(`Attempt ${attempt} failed to start recorder for user ${payload.userId}:`, err);
-            if (attempt === MAX_RETRIES) {
-              console.error(`All ${MAX_RETRIES} attempts failed for payload:`, payload);
+              if (exitCode === 0 && !isTimedOut) {
+                const transcriptionPayload: TranscriptionPayload = {
+                  recordingId: payload.recordingId,
+                  fileName: `${meetingId}.webm`
+                };
+                await redisClient.rPush(TRANSCRIPTION_QUEUE, JSON.stringify(transcriptionPayload));
+                console.log(`Pushed to ${TRANSCRIPTION_QUEUE} for recording ${payload.recordingId}`);
+              }
+            }).catch(async (err: any) => {
+              console.error(`Error waiting for container for recording ${payload.recordingId}:`, err);
               await prisma.recording.update({
                 where: { id: payload.recordingId },
                 data: {
                   status: "FAILED",
-                  errorMetadata: JSON.stringify(err),
+                  errorMetadata: JSON.stringify(err)
+                }
+              });
+            });
+
+            break; // Success, exit retry loop
+          } catch (err: any) {
+            const errorMessage = err?.message || String(err);
+            console.error(`Attempt ${attempt} failed to start recorder for user ${payload.userId}:`, errorMessage);
+
+            const isLimitError = errorMessage.includes("limit") || errorMessage.includes("already has an active recorder");
+
+            if (attempt === MAX_RETRIES || isLimitError) {
+              console.error(`${isLimitError ? "Limit reached," : "All attempts failed"} for payload:`, payload);
+              await prisma.recording.update({
+                where: { id: payload.recordingId },
+                data: {
+                  status: "FAILED",
+                  errorMetadata: JSON.stringify({ error: errorMessage, attempt }),
                 },
               });
+              break; // Stop retrying
             } else {
-              await sleep(1000);
+              await sleep(2000);
             }
           }
         }

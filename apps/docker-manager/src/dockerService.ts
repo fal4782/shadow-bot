@@ -44,8 +44,9 @@ export class DockerService {
             });
 
             if (allRecorderContainers.length >= this.MAX_CONCURRENT_CONTAINERS) {
-                console.warn(`Global limit of ${this.MAX_CONCURRENT_CONTAINERS} containers reached. Skipping.`);
-                return null;
+                const errorMsg = `Global limit of ${this.MAX_CONCURRENT_CONTAINERS} containers reached.`;
+                console.warn(errorMsg);
+                throw new Error(errorMsg);
             }
 
             // Check for existing containers for this specific user
@@ -56,8 +57,9 @@ export class DockerService {
             });
 
             if (existingContainers.length > 0 && existingContainers[0]) {
-                console.warn(`User ${payload.userId} already has an active recorder (${existingContainers[0].Id}). Skipping.`);
-                return null;
+                const errorMsg = `User ${payload.userId} already has an active recorder (${existingContainers[0].Id}).`;
+                console.warn(errorMsg);
+                throw new Error(errorMsg);
             }
 
             const duration = payload.maxDurationMins?.toString() || "15";
