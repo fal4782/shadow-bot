@@ -118,11 +118,11 @@ export function AuthPageLayout({
 
       const baseRadius = Math.min(width, height) * 0.35; // HUGE: 35% of screen min dim
 
-      // Color Interpolation - Updated to Terracotta
-      // Terracotta light: 228, 122, 95 (#E47A5F)
-      // Terracotta dark: 139, 58, 47 (#8B3A2F)
+      // Color Interpolation - Updated to Terracotta (Primary)
+      // Primary-500: #e07a5f -> 224, 122, 95
+      // Primary-900: #8b3a2f -> 139, 58, 47
       const colorShift = Math.min(params.colorShift, 0.1);
-      const r = 228 + (139 - 228) * colorShift;
+      const r = 224 + (139 - 224) * colorShift;
       const g = 122 + (58 - 122) * colorShift;
       const b = 95 + (47 - 95) * colorShift;
       const rgb = `${Math.round(r)}, ${Math.round(g)}, ${Math.round(b)}`;
@@ -192,7 +192,7 @@ export function AuthPageLayout({
   }, []);
 
   return (
-    <div className="min-h-screen bg-cream-50 text-brown-900 font-sans selection:bg-terra-500/30 flex items-center justify-center p-6 relative overflow-hidden">
+    <div className="min-h-screen bg-secondary-50 text-text-900 font-sans selection:bg-primary-500/30 flex items-center justify-center p-6 relative overflow-hidden">
       {/* Canvas Background */}
       <canvas
         ref={canvasRef}
@@ -201,7 +201,7 @@ export function AuthPageLayout({
       />
 
       {/* Static Gradient Fallback */}
-      <div className="absolute inset-0 z-[-1] bg-radial-gradient from-terra-500/5 to-transparent pointer-events-none" />
+      <div className="absolute inset-0 z-[-1] bg-radial-gradient from-primary-500/5 to-transparent pointer-events-none" />
 
       {/* Content */}
       <motion.div
@@ -212,7 +212,7 @@ export function AuthPageLayout({
           ease: [0.22, 1, 0.36, 1],
           delay: 0.2,
         }}
-        className="w-full max-w-sm z-10 space-y-12 bg-white/80 backdrop-blur-md p-4 rounded-3xl border border-brown-900/10 shadow-2xl relative"
+        className="w-full max-w-sm z-10 space-y-12 bg-white/80 backdrop-blur-md p-4 rounded-3xl border border-text-900/10 shadow-2xl relative"
       >
         {/* Floating animation */}
         <motion.div
@@ -224,7 +224,7 @@ export function AuthPageLayout({
             repeat: Infinity,
             ease: "easeInOut",
           }}
-          className="absolute inset-0 -z-10 bg-linear-to-br from-terra-600/5 to-terra-800/5 rounded-3xl blur-xl"
+          className="absolute inset-0 -z-10 bg-linear-to-br from-primary-600/5 to-primary-800/5 rounded-3xl blur-xl"
         />
 
         <header className="text-center space-y-4 pt-4">
@@ -233,7 +233,7 @@ export function AuthPageLayout({
               whileHover={{ scale: 1.1, rotate: 5 }}
               whileTap={{ scale: 0.95 }}
               transition={{ type: "spring", stiffness: 300, damping: 20 }}
-              className="w-14 h-14 rounded-2xl bg-linear-to-br from-terra-600 to-terra-800 mx-auto flex items-center justify-center shadow-2xl shadow-terra-800/20 group-hover:shadow-terra-800/40 transition-shadow duration-300"
+              className="w-14 h-14 rounded-2xl bg-linear-to-br from-primary-600 to-primary-800 mx-auto flex items-center justify-center shadow-2xl shadow-primary-800/20 group-hover:shadow-primary-800/40 transition-shadow duration-300"
             >
               <Video className="text-white w-7 h-7" />
             </motion.div>
@@ -244,10 +244,10 @@ export function AuthPageLayout({
             transition={{ delay: 0.4, duration: 0.6 }}
             className="space-y-1"
           >
-            <h1 className="text-3xl font-bold tracking-tight text-brown-900">
+            <h1 className="text-3xl font-bold tracking-tight text-text-900">
               {title}
             </h1>
-            <p className="text-sm font-medium text-brown-600 tracking-tight">
+            <p className="text-sm font-medium text-text-600 tracking-tight">
               {subtitle}
             </p>
           </motion.div>

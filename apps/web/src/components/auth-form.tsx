@@ -174,18 +174,18 @@ export function AuthForm({ mode: initialMode }: AuthFormProps) {
                   transition={{ type: "spring", stiffness: 100, damping: 15 }}
                   className="space-y-2"
                 >
-                  <label className="text-[11px] font-bold text-brown-700 uppercase tracking-wider ml-1">
+                  <label className="text-[11px] font-bold text-text-700 uppercase tracking-wider ml-1">
                     Full Name
                   </label>
                   <motion.div
                     whileFocus={{ scale: 1.01 }}
                     className="relative group"
                   >
-                    <User className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-brown-600 group-focus-within:text-terra-600 transition-colors" />
+                    <User className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-text-600 group-focus-within:text-primary-600 transition-colors" />
                     <input
                       name="name"
                       defaultValue={(signupState as any)?.name}
-                      className="w-full h-14 bg-cream-100 border border-brown-900/10 rounded-xl px-5 pl-12 font-medium text-brown-900 outline-none focus:border-terra-600 focus:ring-2 focus:ring-terra-600/20 transition-all placeholder:text-brown-500"
+                      className="w-full h-14 bg-secondary-100 border border-text-900/10 rounded-xl px-5 pl-12 font-medium text-text-900 outline-none focus:border-primary-600 focus:ring-2 focus:ring-primary-600/20 transition-all placeholder:text-text-500"
                       placeholder="John Doe"
                     />
                   </motion.div>
@@ -204,21 +204,21 @@ export function AuthForm({ mode: initialMode }: AuthFormProps) {
 
             {/* Email Field */}
             <motion.div variants={itemVariants} className="space-y-2">
-              <label className="text-[11px] font-bold text-brown-700 uppercase tracking-wider ml-1">
+              <label className="text-[11px] font-bold text-text-700 uppercase tracking-wider ml-1">
                 Email Address
               </label>
               <motion.div
                 whileFocus={{ scale: 1.01 }}
                 className="relative group"
               >
-                <Mail className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-brown-600 group-focus-within:text-terra-600 transition-colors" />
+                <Mail className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-text-600 group-focus-within:text-primary-600 transition-colors" />
                 <input
                   name="email"
                   type="email"
                   defaultValue={
                     (signupState as any)?.email || (loginState as any)?.email
                   }
-                  className="w-full h-14 bg-cream-100 border border-brown-900/10 rounded-xl px-5 pl-12 font-medium text-brown-900 outline-none focus:border-terra-600 focus:ring-2 focus:ring-terra-600/20 transition-all placeholder:text-brown-500"
+                  className="w-full h-14 bg-secondary-100 border border-text-900/10 rounded-xl px-5 pl-12 font-medium text-text-900 outline-none focus:border-primary-600 focus:ring-2 focus:ring-primary-600/20 transition-all placeholder:text-text-500"
                   placeholder="john@example.com"
                 />
               </motion.div>
@@ -236,7 +236,7 @@ export function AuthForm({ mode: initialMode }: AuthFormProps) {
             {/* Password Field */}
             <motion.div variants={itemVariants} className="space-y-2">
               <div className="flex justify-between items-center px-1">
-                <label className="text-[11px] font-bold text-brown-700 uppercase tracking-wider">
+                <label className="text-[11px] font-bold text-text-700 uppercase tracking-wider">
                   Password
                 </label>
                 {mode === "login" && (
@@ -244,7 +244,7 @@ export function AuthForm({ mode: initialMode }: AuthFormProps) {
                     whileHover={{ scale: 1.05 }}
                     whileTap={{ scale: 0.95 }}
                     href="#"
-                    className="text-[10px] font-bold text-terra-600 hover:text-terra-700 transition-colors"
+                    className="text-[10px] font-bold text-primary-600 hover:text-primary-700 transition-colors"
                   >
                     Forgot?
                   </motion.a>
@@ -254,11 +254,11 @@ export function AuthForm({ mode: initialMode }: AuthFormProps) {
                 whileFocus={{ scale: 1.01 }}
                 className="relative group"
               >
-                <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-brown-600 group-focus-within:text-terra-600 transition-colors" />
+                <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-text-600 group-focus-within:text-primary-600 transition-colors" />
                 <input
                   name="password"
                   type="password"
-                  className="w-full h-14 bg-cream-100 border border-brown-900/10 rounded-xl px-5 pl-12 font-medium text-brown-900 outline-none focus:border-terra-600 focus:ring-2 focus:ring-terra-600/20 transition-all placeholder:text-brown-500"
+                  className="w-full h-14 bg-secondary-100 border border-text-900/10 rounded-xl px-5 pl-12 font-medium text-text-900 outline-none focus:border-primary-600 focus:ring-2 focus:ring-primary-600/20 transition-all placeholder:text-text-500"
                   placeholder="••••••••"
                 />
               </motion.div>
@@ -266,7 +266,7 @@ export function AuthForm({ mode: initialMode }: AuthFormProps) {
                 <motion.p
                   initial={{ opacity: 0, y: -5 }}
                   animate={{ opacity: 1, y: 0 }}
-                  className="text-[10px] font-bold text-terra-600 ml-1"
+                  className="text-[10px] font-bold text-primary-600 ml-1"
                 >
                   {currentState.errors.password[0]}
                 </motion.p>
@@ -281,7 +281,7 @@ export function AuthForm({ mode: initialMode }: AuthFormProps) {
             whileTap={{ scale: 0.98 }}
             type="submit"
             disabled={isLoading}
-            className="w-full h-14 bg-linear-to-r from-terra-600 to-terra-700 hover:opacity-90 text-white rounded-xl font-bold transition-all shadow-xl active:scale-[0.98] mt-4 flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+            className="w-full h-14 bg-linear-to-r from-primary-600 to-primary-700 hover:opacity-90 text-white rounded-xl font-bold transition-all shadow-xl active:scale-[0.98] mt-4 flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
           >
             <AnimatePresence mode="wait">
               {isLoading ? (
@@ -320,11 +320,11 @@ export function AuthForm({ mode: initialMode }: AuthFormProps) {
 
           {/* OR Divider */}
           <div className="relative flex items-center gap-4 py-2">
-            <div className="flex-1 h-px bg-brown-900/10" />
-            <span className="text-[10px] font-bold text-brown-400 uppercase tracking-widest whitespace-nowrap">
+            <div className="flex-1 h-px bg-text-900/10" />
+            <span className="text-[10px] font-bold text-text-400 uppercase tracking-widest whitespace-nowrap">
               or continue with
             </span>
-            <div className="flex-1 h-px bg-brown-900/10" />
+            <div className="flex-1 h-px bg-text-900/10" />
           </div>
 
           {/* Google Sign In */}
@@ -335,7 +335,7 @@ export function AuthForm({ mode: initialMode }: AuthFormProps) {
             type="button"
             onClick={() => signIn("google", { callbackUrl: "/" })}
             disabled={isLoading}
-            className="w-full h-14 bg-white border border-brown-900/10 hover:bg-cream-100 text-brown-900 rounded-xl font-bold transition-all shadow-md active:scale-[0.98] flex items-center justify-center gap-3 disabled:opacity-50 disabled:cursor-not-allowed"
+            className="w-full h-14 bg-white border border-text-900/10 hover:bg-secondary-100 text-text-900 rounded-xl font-bold transition-all shadow-md active:scale-[0.98] flex items-center justify-center gap-3 disabled:opacity-50 disabled:cursor-not-allowed"
           >
             <svg className="w-5 h-5" viewBox="0 0 24 24">
               <path
@@ -361,7 +361,7 @@ export function AuthForm({ mode: initialMode }: AuthFormProps) {
           {/* Mode Toggle */}
           <motion.div
             variants={itemVariants}
-            className="text-center pt-4 border-t border-brown-900/10"
+            className="text-center pt-4 border-t border-text-900/10"
           >
             <motion.button
               whileHover={{ scale: 1.02 }}
@@ -370,19 +370,19 @@ export function AuthForm({ mode: initialMode }: AuthFormProps) {
               onClick={() =>
                 router.push(mode === "login" ? "/signup" : "/login")
               }
-              className="text-xs font-semibold text-brown-600"
+              className="text-xs font-semibold text-text-600"
             >
               {mode === "login" ? (
                 <p>
                   Don't have an account?{" "}
-                  <span className="text-terra-600 hover:text-terra-700 transition-colors">
+                  <span className="text-primary-600 hover:text-primary-700 transition-colors">
                     Sign Up
                   </span>
                 </p>
               ) : (
                 <p>
                   Already have an account?{" "}
-                  <span className="text-terra-600 hover:text-terra-700 transition-colors">
+                  <span className="text-primary-600 hover:text-primary-700 transition-colors">
                     Sign In
                   </span>
                 </p>
