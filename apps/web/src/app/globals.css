@@ -1,27 +1,41 @@
 @import "tailwindcss";
 
 @theme {
-  /* Cream & Terracotta Light Theme */
-
-  /* Backgrounds - Cream/Beige */
-  --color-cream-50: #fefcf3;
-  --color-cream-100: #faf8f1;
-  --color-cream-200: #f5f3e8;
-  --color-cream-300: #eeede9;
-
   /* Primary - Terracotta */
-  --color-terra-900: #8b3a2f;
-  --color-terra-800: #a84a3d;
-  --color-terra-700: #c45a4a;
-  --color-terra-600: #d4634a;
-  --color-terra-500: #e07a5f;
-  --color-terra-400: #e89580;
+  --color-primary-50: #fff5f2;
+  --color-primary-100: #ffede8;
+  --color-primary-200: #ffd8cf;
+  --color-primary-300: #ffbba9;
+  --color-primary-400: #ff9176;
+  --color-primary-500: #e07a5f;
+  --color-primary-600: #d4634a;
+  --color-primary-700: #c45a4a;
+  --color-primary-800: #a84a3d;
+  --color-primary-900: #8b3a2f;
 
   /* Text - Brown */
-  --color-brown-900: #3d2817;
-  --color-brown-800: #5c3d2e;
-  --color-brown-700: #7a5548;
-  --color-brown-600: #8b6f5f;
-  --color-brown-500: #a08978;
-  --color-brown-400: #b5a393;
+  --color-text-50: #f7f5f4;
+  --color-text-100: #edebe9;
+  --color-text-200: #dcd7d3;
+  --color-text-300: #c2bbb4;
+  --color-text-400: #a08978;
+  --color-text-500: #8b6f5f;
+  --color-text-600: #7a5548;
+  --color-text-700: #5c3d2e;
+  --color-text-800: #4a3225;
+  --color-text-900: #3d2817;
+
+  /* Secondary (for bgs) - Creamish Warm White */
+  --color-secondary-50: #fffdfa;
+  --color-secondary-100: #fdfbf7;
+  --color-secondary-200: #f9f5ed;
+  --color-secondary-300: #f2eadb;
+  --color-secondary-400: #e8dbc5;
+  --color-secondary-500: #d9bf9e;
+}
+
+@layer base {
+  body {
+    @apply bg-secondary-100 text-text-900 selection:bg-primary-500/30;
+  }
 }
