@@ -4,18 +4,18 @@ import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   Video,
-  FileText,
   Sparkles,
   ArrowRight,
   Bot,
-  LogOut,
-  Play,
-  CheckCircle2,
   AlertCircle,
+  History,
+  Activity,
+  ArrowUpRight,
 } from "lucide-react";
-import { signOut } from "next-auth/react";
+import Link from "next/link";
 
 import { meetingApi } from "@/lib/api/meeting";
+import { getMeetingStatus } from "@/lib/status-utils";
 
 export function Dashboard({ session }: { session: any }) {
   const [meetLink, setMeetLink] = useState("");
@@ -25,34 +25,32 @@ export function Dashboard({ session }: { session: any }) {
   const [activeBotContainerId, setActiveBotContainerId] = useState<
     string | null
   >(null);
+  const [activeRecording, setActiveRecording] = useState<any | null>(null);
+
   const token = session?.accessToken;
 
-  // Poll for meeting updates every 5 seconds
-  // Initial fetch on mount
+  // Poll for meeting updates
   useEffect(() => {
-    if (token) {
-      meetingApi.getMeetings(token).then(setRecordings).catch(console.error);
-    }
-  }, [token]);
-
-  // Poll for meeting updates ONLY if active bot exists
-  useEffect(() => {
-    if (!token || !activeBotContainerId) return;
+    if (!token) return;
 
     const fetchMeetings = () => {
       meetingApi.getMeetings(token).then(setRecordings).catch(console.error);
     };
 
-    const intervalId = setInterval(fetchMeetings, 5000);
-    return () => clearInterval(intervalId);
-  }, [token, activeBotContainerId]);
+    // Initial fetch
+    fetchMeetings();
 
-  // Derive active bot status from recordings
+    const intervalId = setInterval(fetchMeetings, 4000); // Slightly faster polling for responsiveness
+    return () => clearInterval(intervalId);
+  }, [token]);
+
+  // Derive active bot status
   useEffect(() => {
-    const activeRecording = recordings.find((r) =>
+    const active = recordings.find((r) =>
       ["PENDING", "ASKING_TO_JOIN", "JOINED"].includes(r.status),
     );
-    setActiveBotContainerId(activeRecording ? activeRecording.id : null);
+    setActiveRecording(active || null);
+    setActiveBotContainerId(active ? active.id : null);
   }, [recordings]);
 
   const [toast, setToast] = useState<{
@@ -100,7 +98,6 @@ export function Dashboard({ session }: { session: any }) {
       const result = await meetingApi.joinMeeting(meetLink, token);
       if (result && result.recordingId) {
         showToast("Bot join request queued");
-        // Immediate refresh
         meetingApi.getMeetings(token).then(setRecordings);
       }
       setMeetLink("");
@@ -113,285 +110,252 @@ export function Dashboard({ session }: { session: any }) {
     }
   }
 
-  async function handleStopBot() {
-    // Stop bot functionality not currently supported by backend meeting routes
-    showToast("Stop bot not implemented in backend", "error");
-  }
-
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case "COMPLETED":
-        return "bg-green-100 text-green-700";
-      case "FAILED":
-      case "TIMEOUT":
-        return "bg-red-100 text-red-700";
-      case "JOINED":
-        return "bg-blue-100 text-blue-700";
-      case "ASKING_TO_JOIN":
-        return "bg-yellow-100 text-yellow-700";
-      default: // PENDING and others
-        return "bg-gray-100 text-gray-700";
-    }
-  };
-
   return (
-    <div className="min-h-screen bg-[#FDFBF7] text-brown-900 font-sans selection:bg-terra-500/30 relative overflow-x-hidden">
-      {/* Background Ambience */}
-      <div className="fixed inset-0 pointer-events-none">
-        <div className="absolute top-[-20%] left-[-10%] w-[50%] h-[50%] bg-terra-200/20 rounded-full blur-[120px]" />
-        <div className="absolute bottom-[-10%] right-[-5%] w-[40%] h-[40%] bg-cream-200/40 rounded-full blur-[100px]" />
+    <div className="min-h-screen bg-secondary-100 text-text-900 font-sans selection:bg-primary-500/30 relative flex flex-col overflow-hidden">
+      {/* Dynamic Background Elements */}
+      <div className="fixed inset-0 pointer-events-none overflow-hidden">
+        {/* Subtle pattern overlay */}
+        <div
+          className="absolute inset-0 opacity-[0.03]"
+          style={{
+            backgroundImage:
+              "radial-gradient(circle at 1px 1px, #3d2817 1px, transparent 0)",
+            backgroundSize: "40px 40px",
+          }}
+        ></div>
+
+        <div className="absolute top-[-20%] left-[-10%] w-[60%] h-[60%] bg-primary-100/30 rounded-full blur-[120px] mix-blend-multiply animate-pulse duration-10000" />
+        <div className="absolute bottom-[-10%] right-[-5%] w-[50%] h-[50%] bg-secondary-200/50 rounded-full blur-[100px] mix-blend-multiply" />
       </div>
 
-      {/* Top Right User Pill */}
-      <motion.div
-        initial={{ opacity: 0, y: -20 }}
-        animate={{ opacity: 1, y: 0 }}
-        className="fixed top-6 right-6 z-50 flex items-center gap-3"
-      >
-        <div className="bg-white/80 backdrop-blur-md border border-brown-900/5 shadow-sm rounded-full pl-4 pr-1 py-1 flex items-center gap-3">
-          <span className="text-xs font-semibold text-brown-600">
-            {session.user?.email}
+      <div className="flex-1 flex flex-col items-center justify-center p-6 min-h-screen relative z-10">
+        {/* Brand Header */}
+        <motion.div
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="absolute top-8 sm:top-12 flex items-center gap-2 group cursor-default"
+        >
+          <div className="w-8 h-8 rounded-lg bg-primary-600 text-white flex items-center justify-center shadow-lg shadow-primary-600/20 group-hover:rotate-6 transition-transform">
+            <Bot className="w-5 h-5" />
+          </div>
+          <span className="font-black text-xl tracking-tighter text-text-900">
+            Shadow Bot
           </span>
-          <button
-            onClick={() => signOut()}
-            className="w-8 h-8 rounded-full bg-cream-100 flex items-center justify-center text-brown-600 hover:bg-terra-100 hover:text-terra-700 transition-colors"
-          >
-            <LogOut className="w-4 h-4" />
-          </button>
-        </div>
-      </motion.div>
+        </motion.div>
 
-      <main className="relative z-10 max-w-6xl mx-auto px-6 pt-32 pb-24">
-        {/* Hero Section */}
-        <div className="text-center max-w-3xl mx-auto mb-24 space-y-10">
-          <motion.div
-            initial={{ opacity: 0, y: 30 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, ease: "easeOut" }}
-            className="space-y-4"
-          >
-            <h1 className="text-6xl md:text-7xl font-black text-brown-900 tracking-tighter leading-[1.1]">
-              Ready to{" "}
-              <span className="text-transparent bg-clip-text bg-gradient-to-r from-terra-600 to-terra-500">
-                join?
+        <div className="w-full max-w-4xl text-center space-y-12">
+          {/* Hero Content */}
+          <div className="space-y-4 relative">
+            <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white border border-primary-100 shadow-sm mb-4">
+              <span className="w-2 h-2 rounded-full bg-green-500" />
+              <span className="text-xs font-bold text-text-500 uppercase tracking-widest">
+                System Operational
+              </span>
+            </div>
+
+            <h1 className="text-4xl md:text-6xl lg:text-7xl font-black text-text-900 tracking-tighter leading-[0.95] relative z-20">
+              Your AI meeting
+              <br />
+              <span className="text-transparent bg-clip-text bg-linear-to-r from-primary-600 via-primary-500 to-orange-500">
+                companion.
               </span>
             </h1>
-            <p className="text-xl text-brown-500 font-medium max-w-lg mx-auto leading-relaxed">
-              Paste your meeting link below and let Shadow Bot determine the
-              rest.
+            <p className="text-lg md:text-xl text-text-400 font-medium max-w-lg mx-auto leading-relaxed pt-1">
+              Capture, transcribe, and chat with your meetings in real-time.
             </p>
-          </motion.div>
+          </div>
 
-          {/* Main Input Component */}
-          <motion.div
-            initial={{ opacity: 0, scale: 0.95 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ duration: 0.5, delay: 0.2 }}
-            className="relative max-w-2xl mx-auto group"
-          >
+          {/* Input Area */}
+          <div className="relative max-w-2xl mx-auto group z-20">
+            {/* Glow Effect */}
             <div
-              className={`absolute -inset-1 rounded-2xl bg-gradient-to-r from-terra-500/20 to-brown-500/20 blur-xl opacity-0 group-hover:opacity-100 transition-opacity duration-500 ${isDeploying ? "opacity-50" : ""}`}
+              className={`absolute -inset-1 rounded-3xl bg-linear-to-r from-terra-500/30 via-orange-400/30 to-brown-500/30 blur-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-700 ${isDeploying ? "opacity-70 animate-pulse" : ""}`}
             />
 
-            <div className="relative bg-white shadow-2xl shadow-brown-900/5 rounded-2xl flex items-center p-2 border border-brown-900/5 focus-within:ring-4 focus-within:ring-terra-500/10 focus-within:border-terra-500/50 transition-all duration-300">
-              <div className="pl-4 pr-3 text-brown-400">
+            <div className="relative bg-white shadow-[0_20px_40px_-12px_rgba(61,40,23,0.1)] rounded-2xl flex items-center p-2.5 border border-text-900/5 focus-within:ring-primary-100/50 focus-within:border-primary-300 transition-all duration-300">
+              <div className="pl-5 pr-3 text-text-300 group-focus-within:text-primary-600 transition-colors">
                 <Video className="w-6 h-6" />
               </div>
 
               <input
                 value={meetLink}
                 onChange={(e) => handleMeetLinkChange(e.target.value)}
-                disabled={isDeploying} // Only disable if deploying, to match logic but allow edits otherwise
-                className="flex-1 h-14 bg-transparent outline-none text-lg font-medium text-brown-900 placeholder:text-brown-300"
-                placeholder="meet.google.com/xxx-yyyy-zzz"
+                disabled={isDeploying}
+                className="flex-1 h-14 bg-transparent outline-none text-lg md:text-xl font-bold text-text-900 placeholder:text-text-200 placeholder:font-bold tracking-tight"
+                placeholder="meet.google.com/abc-defg-hij"
               />
 
               <AnimatePresence>
                 {(meetLink.length > 5 || isDeploying) && (
                   <motion.button
-                    initial={{ opacity: 0, scale: 0.8, x: 20 }}
-                    animate={{ opacity: 1, scale: 1, x: 0 }}
-                    exit={{ opacity: 0, scale: 0.8, x: 20 }}
+                    initial={{ opacity: 0, scale: 0.9, width: 0 }}
+                    animate={{ opacity: 1, scale: 1, width: "auto" }}
+                    exit={{ opacity: 0, scale: 0.9, width: 0 }}
                     onClick={handleInvite}
                     disabled={isDeploying || !!activeBotContainerId}
-                    className="h-12 px-8 rounded-xl bg-terra-600 text-white font-bold shadow-lg shadow-terra-600/20 hover:bg-terra-700 hover:shadow-terra-600/30 hover:scale-105 active:scale-95 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2 ml-2"
+                    className="h-12 pl-6 pr-8 rounded-xl bg-primary-600 text-white font-bold shadow-lg shadow-primary-600/20 hover:bg-primary-700 hover:shadow-primary-600/30 hover:scale-[1.02] active:scale-95 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2.5 ml-2 overflow-hidden whitespace-nowrap"
                   >
                     {isDeploying ? (
-                      <Sparkles className="w-5 h-5 animate-spin" />
+                      <Sparkles className="w-4 h-4 animate-spin" />
                     ) : (
                       <ArrowRight className="w-5 h-5" />
                     )}
-                    <span>{isDeploying ? "Launching" : "Join"}</span>
+                    <span className="text-base tracking-tight">
+                      {isDeploying ? "Launching..." : "Join Now"}
+                    </span>
                   </motion.button>
                 )}
               </AnimatePresence>
             </div>
 
-            <div className="absolute top-full left-0 w-full mt-3 flex justify-center">
+            <div className="absolute top-full left-0 w-full mt-6 flex justify-center">
               <AnimatePresence>
-                {linkError && (
+                {linkError ? (
                   <motion.p
                     initial={{ opacity: 0, y: -10 }}
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0, y: -10 }}
-                    className="text-sm font-semibold text-red-500 flex items-center gap-1.5 bg-red-50 px-3 py-1 rounded-full border border-red-100"
+                    className="text-sm font-bold text-red-500 flex items-center gap-2 bg-red-50 px-4 py-2 rounded-full border border-red-100 shadow-sm"
                   >
                     <AlertCircle className="w-4 h-4" /> {linkError}
                   </motion.p>
+                ) : (
+                  // Helper text when no error
+                  <motion.div
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    className="flex items-center gap-6 text-text-300 text-xs font-bold uppercase tracking-widest bg-white/50 px-6 py-2 rounded-full border border-white/50"
+                  >
+                    <span className="flex items-center gap-2">
+                      <CheckCircle2 className="w-3 h-3" /> Fast Deploy
+                    </span>
+                    <span className="flex items-center gap-2">
+                      <Bot className="w-3 h-3" /> Auto-Join
+                    </span>
+                    <span className="flex items-center gap-2">
+                      <Sparkles className="w-3 h-3" /> AI Summary
+                    </span>
+                  </motion.div>
                 )}
               </AnimatePresence>
             </div>
-          </motion.div>
-
-          {/* Floating Stats */}
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 0.4 }}
-            className="flex flex-wrap justify-center gap-4 pt-4"
-          >
-            <div className="bg-white/60 backdrop-blur-sm border border-brown-900/5 px-5 py-2 rounded-full shadow-sm text-sm font-medium text-brown-600 flex items-center gap-2">
-              <span
-                className={`w-2 h-2 rounded-full ${activeBotContainerId ? "bg-green-500" : "bg-gray-300"}`}
-              />
-              {activeBotContainerId ? "Bot Busy" : "Bot Idle"}
-            </div>
-            <div className="bg-white/60 backdrop-blur-sm border border-brown-900/5 px-5 py-2 rounded-full shadow-sm text-sm font-medium text-brown-600 flex items-center gap-2">
-              <Video className="w-4 h-4 text-brown-400" />
-              {recordings.length} Recordings Saved
-            </div>
-          </motion.div>
-        </div>
-
-        {/* Recordings Grid */}
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 0.6 }}
-        >
-          <div className="flex items-center gap-4 mb-8">
-            <div className="h-px bg-brown-900/10 flex-1" />
-            <h2 className="text-brown-400 font-bold uppercase tracking-widest text-xs">
-              Recent History
-            </h2>
-            <div className="h-px bg-brown-900/10 flex-1" />
           </div>
 
-          {recordings.length === 0 ? (
-            <div className="text-center py-20 opacity-50">
-              <p className="text-brown-500">No recordings yet.</p>
-            </div>
-          ) : (
-            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {recordings.map((rec: any, index: number) => (
-                <motion.div
-                  key={rec.id}
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.4, delay: 0.1 * index }}
-                  whileHover={{ scale: 1.01, y: -2 }}
-                  className="bg-white rounded-2xl border border-brown-900/5 p-6 shadow-sm hover:shadow-xl hover:shadow-brown-900/5 transition-all duration-300 group"
-                >
-                  <div className="flex flex-col h-full justify-between">
-                    <div>
-                      <div className="flex justify-between items-start mb-6">
-                        <div className="w-12 h-12 rounded-2xl bg-cream-50 flex items-center justify-center text-brown-600 group-hover:bg-terra-50 group-hover:text-terra-600 transition-colors">
-                          <Video className="w-6 h-6" />
-                        </div>
-                        <span
-                          className={`px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wide border ${
-                            rec.status === "COMPLETED"
-                              ? "bg-green-50 text-green-700 border-green-100"
-                              : rec.status === "FAILED"
-                                ? "bg-red-50 text-red-700 border-red-100"
-                                : "bg-blue-50 text-blue-700 border-blue-100"
-                          }`}
-                        >
-                          {rec.status}
-                        </span>
-                      </div>
+          {/* Footer / Links */}
+          <div className="pt-16 pb-8">
+            <Link
+              href="/library"
+              className="group inline-flex items-center gap-3 text-text-400 hover:text-primary-700 font-bold transition-all px-8 py-4 rounded-full hover:bg-white hover:shadow-lg hover:shadow-text-900/5 border border-transparent hover:border-text-900/5 text-sm"
+            >
+              <div className="p-2 bg-text-100 text-text-500 rounded-full group-hover:bg-primary-100 group-hover:text-primary-600 transition-colors">
+                <History className="w-4 h-4" />
+              </div>
+              <span>View Past Meetings</span>
+              <ArrowRight className="w-4 h-4 opacity-0 -translate-x-2 group-hover:opacity-100 group-hover:translate-x-0 transition-all text-primary-500" />
+            </Link>
+          </div>
+        </div>
+      </div>
 
-                      <div className="space-y-2 mb-6">
-                        <h3 className="text-xl font-bold text-brown-900 truncate">
-                          Meeting #{rec.id.substring(0, 6)}
-                        </h3>
-                        <p className="text-xs font-semibold text-brown-400 uppercase tracking-wide">
-                          {new Date(rec.createdAt).toLocaleDateString(
-                            undefined,
-                            {
-                              month: "long",
-                              day: "numeric",
-                              hour: "2-digit",
-                              minute: "2-digit",
-                            },
-                          )}
-                        </p>
-                        <p className="text-sm text-brown-500 truncate pt-2 opacity-80 group-hover:opacity-100 transition-opacity">
-                          {rec.link}
-                        </p>
-                      </div>
+      <AnimatePresence>
+        {activeRecording && (
+          <motion.div
+            key={activeRecording.id}
+            initial={{ y: 100, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            exit={{ y: 100, opacity: 0 }}
+            className="fixed bottom-0 left-0 right-0 z-50 p-6 flex justify-center pointer-events-none"
+          >
+            <div
+              onClick={() => (window.location.href = "/library")}
+              className="pointer-events-auto bg-white/90 backdrop-blur-xl border border-primary-200/40 shadow-2xl shadow-text-900/10 rounded-full px-6 py-3.5 flex items-center gap-6 cursor-pointer group hover:scale-[1.02] hover:bg-white transition-all duration-300 ring-1 ring-black/5"
+            >
+              {(() => {
+                const statusConfig = getMeetingStatus(activeRecording.status);
+                const StatusIcon = statusConfig.icon;
+                return (
+                  <>
+                    <div className="flex items-center gap-3">
+                      <span
+                        className={`relative inline-flex rounded-full h-2.5 w-2.5 ${statusConfig.dotClass}`}
+                      ></span>
+                      <span
+                        className={`text-[10px] font-black uppercase tracking-widest ${statusConfig.textClass}`}
+                      >
+                        {statusConfig.label}
+                      </span>
                     </div>
 
-                    <div className="pt-6 border-t border-brown-900/5 flex gap-3">
-                      {rec.status !== "COMPLETED" ? (
-                        <button
-                          disabled
-                          className="flex-1 py-3 rounded-xl bg-gray-50 text-gray-400 text-sm font-bold cursor-not-allowed"
-                        >
-                          Watch
-                        </button>
-                      ) : (
-                        <a
-                          href={`${process.env.NEXT_PUBLIC_API_URL}/recordings/${rec.fileName}`}
-                          target="_blank"
-                          className="flex-1 py-3 rounded-xl bg-terra-600 text-white text-sm font-bold shadow-lg shadow-brown-900/10 hover:shadow-terra-600/20 hover:scale-105 transition-all text-center flex items-center justify-center gap-2"
-                        >
-                          <Play className="w-3.5 h-3.5" /> Watch
-                        </a>
-                      )}
-                      <button
-                        disabled={!rec.hasTranscript}
-                        className="w-12 flex items-center justify-center rounded-xl bg-cream-50 text-brown-600 hover:bg-cream-100 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                      >
-                        <FileText className="w-5 h-5" />
-                      </button>
-                      <button
-                        disabled={!rec.summary}
-                        className="w-12 flex items-center justify-center rounded-xl bg-cream-50 text-brown-600 hover:bg-cream-100 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                      >
-                        <Sparkles className="w-5 h-5" />
-                      </button>
-                    </div>
-                  </div>
-                </motion.div>
-              ))}
-            </div>
-          )}
-        </motion.div>
-      </main>
+                    <div className="h-4 w-px bg-text-200" />
 
-      {/* Toast Notification */}
+                    <div className="flex items-center gap-2 text-text-600">
+                      <span className="font-bold text-sm tracking-tight">
+                        {activeRecording.link ||
+                          `Meeting #${activeRecording.id.substring(0, 8)}`}
+                      </span>
+                    </div>
+
+                    <div className="flex items-center gap-1.5 pl-2 text-primary-600 font-black text-[10px] uppercase tracking-wider group-hover:underline decoration-2 underline-offset-4 decoration-primary-200">
+                      <span>Open</span>
+                      <ArrowUpRight className="w-3.5 h-3.5" />
+                    </div>
+                  </>
+                );
+              })()}
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Global Toast */}
       <AnimatePresence>
         {toast && (
           <motion.div
-            initial={{ opacity: 0, y: 20, scale: 0.9 }}
-            animate={{ opacity: 1, y: 0, scale: 1 }}
-            exit={{ opacity: 0, y: 20, scale: 0.9 }}
-            className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50"
+            initial={{ opacity: 0, x: 50, scale: 0.9 }}
+            animate={{ opacity: 1, x: 0, scale: 1 }}
+            exit={{ opacity: 0, scale: 0.9 }}
+            className="fixed top-8 right-8 z-100"
           >
             <div
-              className={`flex items-center gap-3 px-6 py-3 rounded-full shadow-2xl border ${
+              className={`flex items-center gap-3 px-8 py-4 rounded-2xl shadow-xl border backdrop-blur-md ${
                 toast.type === "error"
-                  ? "bg-red-600 text-white border-red-500"
-                  : "bg-brown-900 text-white border-brown-800"
+                  ? "bg-red-50/95 text-red-900 border-red-200 shadow-red-500/10"
+                  : "bg-emerald-50/95 text-emerald-900 border-emerald-200 shadow-emerald-500/10"
               }`}
             >
-              <div className="w-2 h-2 rounded-full bg-white animate-pulse" />
-              <p className="text-sm font-bold tracking-wide">{toast.message}</p>
+              <div
+                className={`w-2 h-2 rounded-full ${
+                  toast.type === "error" ? "bg-red-500" : "bg-emerald-500"
+                }`}
+              />
+              <p className="text-sm font-bold tracking-tight">
+                {toast.message}
+              </p>
             </div>
           </motion.div>
         )}
       </AnimatePresence>
     </div>
+  );
+}
+
+// Simple icon for the helper text
+function CheckCircle2(props: any) {
+  return (
+    <svg
+      {...props}
+      xmlns="http://www.w3.org/2000/svg"
+      width="24"
+      height="24"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      <circle cx="12" cy="12" r="10" />
+      <path d="m9 12 2 2 4-4" />
+    </svg>
   );
 }
