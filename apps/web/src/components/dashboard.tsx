@@ -11,11 +11,13 @@ import {
   History,
   Activity,
   ArrowUpRight,
+  Text,
 } from "lucide-react";
 import Link from "next/link";
 
 import { meetingApi } from "@/lib/api/meeting";
 import { getMeetingStatus } from "@/lib/status-utils";
+import { UserProfileBadge } from "./user-profile-badge";
 
 export function Dashboard({ session }: { session: any }) {
   const [meetLink, setMeetLink] = useState("");
@@ -47,7 +49,7 @@ export function Dashboard({ session }: { session: any }) {
   // Derive active bot status
   useEffect(() => {
     const active = recordings.find((r) =>
-      ["PENDING", "ASKING_TO_JOIN", "JOINED"].includes(r.status),
+      ["PENDING", "ASKING_TO_JOIN", "JOINED"].includes(r.recordingStatus),
     );
     setActiveRecording(active || null);
     setActiveBotContainerId(active ? active.id : null);
@@ -68,7 +70,7 @@ export function Dashboard({ session }: { session: any }) {
 
   const validateMeetLink = (link: string): boolean => {
     const meetRegex =
-      /^https:\/\/meet\.google\.com\/[a-z0-9]{3}-?[a-z0-9]{4}-?[a-z0-9]{3}$/i;
+      /^(https?:\/\/)?meet\.google\.com\/[a-z0-9]{3}-?[a-z0-9]{4}-?[a-z0-9]{3}$/i;
     return meetRegex.test(link.trim());
   };
 
@@ -95,7 +97,12 @@ export function Dashboard({ session }: { session: any }) {
 
     setIsDeploying(true);
     try {
-      const result = await meetingApi.joinMeeting(meetLink, token);
+      let validLink = meetLink.trim();
+      if (!validLink.startsWith("http")) {
+        validLink = `https://${validLink}`;
+      }
+
+      const result = await meetingApi.joinMeeting(validLink, token);
       if (result && result.recordingId) {
         showToast("Bot join request queued");
         meetingApi.getMeetings(token).then(setRecordings);
@@ -133,7 +140,7 @@ export function Dashboard({ session }: { session: any }) {
         <motion.div
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
-          className="absolute top-8 sm:top-12 flex items-center gap-2 group cursor-default"
+          className="absolute top-8 sm:top-12 left-6 sm:left-12 flex items-center gap-2 group cursor-default"
         >
           <div className="w-8 h-8 rounded-lg bg-primary-600 text-white flex items-center justify-center shadow-lg shadow-primary-600/20 group-hover:rotate-6 transition-transform">
             <Bot className="w-5 h-5" />
@@ -143,13 +150,18 @@ export function Dashboard({ session }: { session: any }) {
           </span>
         </motion.div>
 
+        {/* User Profile Badge */}
+        <div className="absolute top-8 sm:top-12 right-6 sm:right-12">
+          <UserProfileBadge user={session?.user} />
+        </div>
+
         <div className="w-full max-w-4xl text-center space-y-12">
           {/* Hero Content */}
           <div className="space-y-4 relative">
             <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white border border-primary-100 shadow-sm mb-4">
-              <span className="w-2 h-2 rounded-full bg-green-500" />
+              <span className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
               <span className="text-xs font-bold text-text-500 uppercase tracking-widest">
-                System Operational
+                Public Beta
               </span>
             </div>
 
@@ -182,28 +194,33 @@ export function Dashboard({ session }: { session: any }) {
                 onChange={(e) => handleMeetLinkChange(e.target.value)}
                 disabled={isDeploying}
                 className="flex-1 h-14 bg-transparent outline-none text-lg md:text-xl font-bold text-text-900 placeholder:text-text-200 placeholder:font-bold tracking-tight"
-                placeholder="meet.google.com/abc-defg-hij"
+                placeholder="meet.google.com/xxx-yyyy-zzz"
               />
 
               <AnimatePresence>
                 {(meetLink.length > 5 || isDeploying) && (
-                  <motion.button
-                    initial={{ opacity: 0, scale: 0.9, width: 0 }}
-                    animate={{ opacity: 1, scale: 1, width: "auto" }}
-                    exit={{ opacity: 0, scale: 0.9, width: 0 }}
-                    onClick={handleInvite}
-                    disabled={isDeploying || !!activeBotContainerId}
-                    className="h-12 pl-6 pr-8 rounded-xl bg-primary-600 text-white font-bold shadow-lg shadow-primary-600/20 hover:bg-primary-700 hover:shadow-primary-600/30 hover:scale-[1.02] active:scale-95 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2.5 ml-2 overflow-hidden whitespace-nowrap"
+                  <motion.div
+                    initial={{ width: 0, opacity: 0, marginLeft: 0 }}
+                    animate={{ width: "auto", opacity: 1, marginLeft: 8 }}
+                    exit={{ width: 0, opacity: 0, marginLeft: 0 }}
+                    transition={{ type: "spring", bounce: 0, duration: 0.4 }}
+                    className="overflow-hidden"
                   >
-                    {isDeploying ? (
-                      <Sparkles className="w-4 h-4 animate-spin" />
-                    ) : (
-                      <ArrowRight className="w-5 h-5" />
-                    )}
-                    <span className="text-base tracking-tight">
-                      {isDeploying ? "Launching..." : "Join Now"}
-                    </span>
-                  </motion.button>
+                    <button
+                      onClick={handleInvite}
+                      disabled={isDeploying || !!activeBotContainerId}
+                      className="h-12 pl-6 pr-8 rounded-xl bg-primary-600 text-white font-bold shadow-lg shadow-primary-600/20 hover:bg-primary-700 hover:shadow-primary-600/30 hover:scale-[1.02] active:scale-95 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2.5 whitespace-nowrap"
+                    >
+                      {isDeploying ? (
+                        <Sparkles className="w-4 h-4 animate-spin" />
+                      ) : (
+                        <ArrowRight className="w-5 h-5" />
+                      )}
+                      <span className="text-base tracking-tight">
+                        {isDeploying ? "Launching..." : "Join Now"}
+                      </span>
+                    </button>
+                  </motion.div>
                 )}
               </AnimatePresence>
             </div>
@@ -227,13 +244,13 @@ export function Dashboard({ session }: { session: any }) {
                     className="flex items-center gap-6 text-text-300 text-xs font-bold uppercase tracking-widest bg-white/50 px-6 py-2 rounded-full border border-white/50"
                   >
                     <span className="flex items-center gap-2">
-                      <CheckCircle2 className="w-3 h-3" /> Fast Deploy
+                      <Text className="w-3 h-3" /> Fast Transcription
                     </span>
                     <span className="flex items-center gap-2">
-                      <Bot className="w-3 h-3" /> Auto-Join
+                      <Bot className="w-3 h-3" /> AI Summary
                     </span>
                     <span className="flex items-center gap-2">
-                      <Sparkles className="w-3 h-3" /> AI Summary
+                      <Sparkles className="w-3 h-3" /> AI Chat
                     </span>
                   </motion.div>
                 )}
@@ -245,13 +262,26 @@ export function Dashboard({ session }: { session: any }) {
           <div className="pt-16 pb-8">
             <Link
               href="/library"
-              className="group inline-flex items-center gap-3 text-text-400 hover:text-primary-700 font-bold transition-all px-8 py-4 rounded-full hover:bg-white hover:shadow-lg hover:shadow-text-900/5 border border-transparent hover:border-text-900/5 text-sm"
+              className="group relative inline-flex items-center gap-4 px-8 py-4 bg-white rounded-full shadow-[0_2px_10px_-2px_rgba(0,0,0,0.05)] hover:shadow-[0_10px_40px_-10px_rgba(200,90,30,0.1)] border border-transparent hover:border-primary-100 transition-all duration-300 hover:-translate-y-0.5"
             >
-              <div className="p-2 bg-text-100 text-text-500 rounded-full group-hover:bg-primary-100 group-hover:text-primary-600 transition-colors">
-                <History className="w-4 h-4" />
+              <div className="w-10 h-10 rounded-full bg-secondary-50 flex items-center justify-center text-text-400 group-hover:bg-primary-50 group-hover:text-primary-600 transition-colors duration-300">
+                <History className="w-5 h-5" />
               </div>
-              <span>View Past Meetings</span>
-              <ArrowRight className="w-4 h-4 opacity-0 -translate-x-2 group-hover:opacity-100 group-hover:translate-x-0 transition-all text-primary-500" />
+
+              <div className="flex flex-col text-left">
+                <span className="text-xs font-bold text-text-400 uppercase tracking-wider group-hover:text-primary-600/70 transition-colors">
+                  Library
+                </span>
+                <span className="font-bold text-text-700 group-hover:text-text-900 text-sm transition-colors">
+                  View Past Meetings
+                </span>
+              </div>
+
+              <div className="pl-2">
+                <div className="w-8 h-8 rounded-full border border-text-100 flex items-center justify-center group-hover:border-primary-200 group-hover:bg-primary-50 transition-all">
+                  <ArrowRight className="w-4 h-4 text-text-300 group-hover:text-primary-600 group-hover:-rotate-45 transition-all duration-300" />
+                </div>
+              </div>
             </Link>
           </div>
         </div>
@@ -271,7 +301,9 @@ export function Dashboard({ session }: { session: any }) {
               className="pointer-events-auto bg-white/90 backdrop-blur-xl border border-primary-200/40 shadow-2xl shadow-text-900/10 rounded-full px-6 py-3.5 flex items-center gap-6 cursor-pointer group hover:scale-[1.02] hover:bg-white transition-all duration-300 ring-1 ring-black/5"
             >
               {(() => {
-                const statusConfig = getMeetingStatus(activeRecording.status);
+                const statusConfig = getMeetingStatus(
+                  activeRecording.recordingStatus,
+                );
                 const StatusIcon = statusConfig.icon;
                 return (
                   <>
@@ -336,26 +368,5 @@ export function Dashboard({ session }: { session: any }) {
         )}
       </AnimatePresence>
     </div>
-  );
-}
-
-// Simple icon for the helper text
-function CheckCircle2(props: any) {
-  return (
-    <svg
-      {...props}
-      xmlns="http://www.w3.org/2000/svg"
-      width="24"
-      height="24"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    >
-      <circle cx="12" cy="12" r="10" />
-      <path d="m9 12 2 2 4-4" />
-    </svg>
   );
 }

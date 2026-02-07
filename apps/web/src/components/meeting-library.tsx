@@ -4,7 +4,6 @@ import { motion, AnimatePresence } from "framer-motion";
 import {
   Search,
   Bot,
-  LogOut,
   Video,
   History,
   MessageSquare,
@@ -12,40 +11,66 @@ import {
   Sparkles,
   Play,
   Loader2,
-  GemIcon,
 } from "lucide-react";
-import { signOut } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { meetingApi } from "@/lib/api/meeting";
 import { getMeetingStatus } from "@/lib/status-utils";
-import { Clock, CheckCircle2, AlertCircle, AlertTriangle } from "lucide-react";
+import { Clock, AlertTriangle } from "lucide-react";
+import { TranscriptViewer } from "./transcript-viewer";
+import { SummaryModal } from "./summary-modal";
+import { UserProfileBadge } from "./user-profile-badge";
 
 export function MeetingLibrary({ session }: { session: any }) {
   const router = useRouter();
   const [recordings, setRecordings] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
-  // Poll for recordings
+  // Poll for recordings only if active
   useEffect(() => {
     if (!session?.accessToken) return;
+    let isMounted = true;
+    let timeoutId: NodeJS.Timeout;
 
     const fetchMeetings = () => {
       meetingApi
         .getMeetings(session.accessToken)
         .then((data) => {
+          if (!isMounted) return;
           setRecordings(data);
           setLoading(false);
+
+          // Only poll if there are active meetings or active processing
+          const hasActive = data.some(
+            (r: any) =>
+              ["PENDING", "ASKING_TO_JOIN", "JOINED"].includes(
+                r.recordingStatus,
+              ) ||
+              r.transcriptionStatus === "IN_PROGRESS" ||
+              r.summaryStatus === "IN_PROGRESS",
+          );
+
+          if (hasActive) {
+            timeoutId = setTimeout(fetchMeetings, 5000);
+          }
         })
         .catch((err) => {
           console.error(err);
-          setLoading(false);
+          if (isMounted) setLoading(false);
         });
     };
 
     fetchMeetings();
-    const intervalId = setInterval(fetchMeetings, 5000);
-    return () => clearInterval(intervalId);
+
+    return () => {
+      isMounted = false;
+      clearTimeout(timeoutId);
+    };
   }, [session]);
+
+  const [activeTranscriptId, setActiveTranscriptId] = useState<string | null>(
+    null,
+  );
+  const [activeSummaryId, setActiveSummaryId] = useState<string | null>(null);
 
   return (
     <div className="min-h-screen bg-secondary-100 text-text-900 font-sans selection:bg-primary-500/30 relative flex flex-col">
@@ -87,19 +112,7 @@ export function MeetingLibrary({ session }: { session: any }) {
 
             <div className="h-8 w-px bg-text-900/10 mx-2" />
 
-            <div className="flex items-center gap-3">
-              <div className="text-right hidden sm:block">
-                <p className="text-xs font-black text-text-900 truncate max-w-[120px]">
-                  {session.user?.email.split("@")[0]}
-                </p>
-              </div>
-              <button
-                onClick={() => signOut()}
-                className="w-10 h-10 rounded-xl bg-white border border-text-900/10 flex items-center justify-center text-text-400 hover:text-red-600 hover:border-red-100 hover:bg-red-50 transition-all shadow-sm"
-              >
-                <LogOut className="w-4 h-4" />
-              </button>
-            </div>
+            <UserProfileBadge user={session?.user} />
           </div>
         </div>
       </header>
@@ -175,28 +188,41 @@ export function MeetingLibrary({ session }: { session: any }) {
 
                 <div className="relative bg-white/60 backdrop-blur-2xl border border-white/60 rounded-[24px] p-8 shadow-[0_8px_32px_-12px_rgba(61,40,23,0.08)] transition-all duration-300">
                   <div className="flex flex-col xl:flex-row xl:items-center justify-between gap-8">
-                    {/* Left: Status & Info */}
+                    {/* Left: Recording Status & Info */}
                     <div className="flex flex-col sm:flex-row sm:items-center gap-6 flex-1">
                       {(() => {
-                        const statusConfig = getMeetingStatus(rec.status);
+                        const statusConfig = getMeetingStatus(
+                          rec.recordingStatus,
+                        );
 
                         return (
                           <>
-                            {/* Meeting ID Badge - Now Clickable Video Icon */}
+                            {/* Play Button / Status Indicator */}
                             <div className="relative shrink-0">
-                              <a
-                                href={`${process.env.NEXT_PUBLIC_API_URL}/recordings/${rec.fileName}`}
-                                target="_blank"
-                                rel="noreferrer"
-                                className="group/icon block relative"
-                              >
-                                <div className="w-16 h-16 rounded-2xl flex items-center justify-center bg-primary-50 text-primary-600 border border-primary-200 shadow-inner group-hover/icon:scale-105 group-hover/icon:shadow-lg group-hover/icon:shadow-primary-500/20 group-hover/icon:border-primary-300 transition-all duration-300 cursor-pointer">
-                                  <div className="relative">
-                                    <div className="absolute inset-0 bg-primary-400 rounded-full opacity-0 group-hover/icon:opacity-20 animate-ping" />
-                                    <Play className="w-8 h-8 fill-current relative z-10 ml-1" />
+                              {rec.recordingStatus === "COMPLETED" &&
+                              rec.fileName ? (
+                                <a
+                                  href={`${process.env.NEXT_PUBLIC_API_URL}/recordings/${rec.fileName}`}
+                                  target="_blank"
+                                  rel="noreferrer"
+                                  className="group/icon block relative"
+                                >
+                                  <div className="w-16 h-16 rounded-2xl flex items-center justify-center bg-primary-50 text-primary-600 border border-primary-200 shadow-inner group-hover/icon:scale-105 group-hover/icon:shadow-lg group-hover/icon:shadow-primary-500/20 group-hover/icon:border-primary-300 transition-all duration-300 cursor-pointer">
+                                    <div className="relative">
+                                      <div className="absolute inset-0 bg-primary-400 rounded-full opacity-0 group-hover/icon:opacity-20 animate-ping" />
+                                      <Play className="w-8 h-8 fill-current relative z-10 ml-1" />
+                                    </div>
                                   </div>
+                                </a>
+                              ) : (
+                                <div
+                                  className={`w-16 h-16 rounded-2xl flex items-center justify-center border shadow-inner ${statusConfig.bgClass} ${statusConfig.textClass} ${statusConfig.borderClass}`}
+                                >
+                                  <statusConfig.icon
+                                    className={`w-8 h-8 ${statusConfig.animationClass || ""}`}
+                                  />
                                 </div>
-                              </a>
+                              )}
                             </div>
 
                             <div className="space-y-2">
@@ -255,32 +281,72 @@ export function MeetingLibrary({ session }: { session: any }) {
                       })()}
                     </div>
 
-                    {/* Right: Actions */}
+                    {/* Right: Actions Buttons */}
                     <div className="flex flex-wrap items-center gap-3">
-                      {rec.status === "COMPLETED" ? (
+                      {rec.recordingStatus === "COMPLETED" && (
                         <>
-                          <div className="flex items-center gap-1.5 group/actions">
-                            <button className="flex items-center gap-2 px-5 py-3 rounded-xl bg-white border border-text-100 text-text-900 font-bold text-sm hover:border-primary-300 hover:text-primary-700 hover:shadow-lg hover:shadow-primary-600/5 transition-all active:scale-95">
-                              <MessageSquare className="w-4 h-4 text-primary-500" />
-                              <span>Analyst</span>
-                            </button>
-                            <button className="flex items-center gap-2 px-5 py-3 rounded-xl bg-white border border-text-100 text-text-900 font-bold text-sm hover:border-primary-300 hover:text-primary-700 hover:shadow-lg hover:shadow-primary-600/5 transition-all active:scale-95">
+                          <button
+                            disabled={rec.transcriptionStatus !== "COMPLETED"}
+                            className="flex items-center gap-2 px-5 py-3 rounded-xl bg-white border border-text-100 text-text-900 font-bold text-sm hover:border-primary-300 hover:text-primary-700 hover:shadow-lg hover:shadow-primary-600/5 transition-all active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:border-text-100 disabled:hover:text-text-900 disabled:hover:shadow-none"
+                          >
+                            <MessageSquare className="w-4 h-4 text-primary-500" />
+                            <span>Analyst</span>
+                          </button>
+
+                          {/* Summary Button */}
+                          {rec.summaryStatus === "COMPLETED" ? (
+                            <button
+                              onClick={() => setActiveSummaryId(rec.id)}
+                              className="flex items-center gap-2 px-5 py-3 rounded-xl bg-white border border-text-100 text-text-900 font-bold text-sm hover:border-primary-300 hover:text-primary-700 hover:shadow-lg hover:shadow-primary-600/5 transition-all active:scale-95"
+                            >
                               <Sparkles className="w-4 h-4 text-primary-500" />
                               <span>Summary</span>
                             </button>
-                            <button className="flex items-center gap-2 px-5 py-3 rounded-xl bg-white border border-text-100 text-text-900 font-bold text-sm hover:border-primary-300 hover:text-primary-700 hover:shadow-lg hover:shadow-primary-600/5 transition-all active:scale-95">
+                          ) : rec.summaryStatus === "FAILED" ? (
+                            <button
+                              disabled
+                              className="flex items-center gap-2 px-5 py-3 rounded-xl bg-red-50 border border-red-100 text-red-400 font-bold text-sm cursor-not-allowed opacity-80"
+                            >
+                              <AlertTriangle className="w-4 h-4" />
+                              <span>Summary Failed</span>
+                            </button>
+                          ) : (
+                            <button
+                              disabled
+                              className="flex items-center gap-2 px-5 py-3 rounded-xl bg-secondary-50 border border-secondary-200 text-text-400 font-bold text-sm cursor-not-allowed"
+                            >
+                              <Loader2 className="w-3 h-3 animate-spin" />
+                              <span>Generating Summary...</span>
+                            </button>
+                          )}
+
+                          {/* Transcript Button */}
+                          {rec.transcriptionStatus === "COMPLETED" ? (
+                            <button
+                              onClick={() => setActiveTranscriptId(rec.id)}
+                              className="flex items-center gap-2 px-5 py-3 rounded-xl bg-white border border-text-100 text-text-900 font-bold text-sm hover:border-primary-300 hover:text-primary-700 hover:shadow-lg hover:shadow-primary-600/5 transition-all active:scale-95"
+                            >
                               <FileText className="w-4 h-4 text-primary-500" />
                               <span>Transcript</span>
                             </button>
-                          </div>
+                          ) : rec.transcriptionStatus === "FAILED" ? (
+                            <button
+                              disabled
+                              className="flex items-center gap-2 px-5 py-3 rounded-xl bg-red-50 border border-red-100 text-red-400 font-bold text-sm cursor-not-allowed opacity-80"
+                            >
+                              <AlertTriangle className="w-4 h-4" />
+                              <span>Transcript Failed</span>
+                            </button>
+                          ) : (
+                            <button
+                              disabled
+                              className="flex items-center gap-2 px-5 py-3 rounded-xl bg-secondary-50 border border-secondary-200 text-text-400 font-bold text-sm cursor-not-allowed"
+                            >
+                              <Loader2 className="w-3 h-3 animate-spin" />
+                              <span>Transcribing...</span>
+                            </button>
+                          )}
                         </>
-                      ) : (
-                        <div className="flex items-center gap-3 px-6 py-4 rounded-2xl bg-secondary-50/50 border border-secondary-200/40">
-                          <Loader2 className="w-4 h-4 text-secondary-500 animate-spin" />
-                          <span className="text-xs font-black text-secondary-600 uppercase tracking-widest">
-                            Syncing Archive...
-                          </span>
-                        </div>
                       )}
                     </div>
                   </div>
@@ -290,6 +356,20 @@ export function MeetingLibrary({ session }: { session: any }) {
           </div>
         )}
       </main>
+
+      <TranscriptViewer
+        recordingId={activeTranscriptId}
+        isOpen={!!activeTranscriptId}
+        onClose={() => setActiveTranscriptId(null)}
+        session={session}
+      />
+
+      <SummaryModal
+        recordingId={activeSummaryId}
+        isOpen={!!activeSummaryId}
+        onClose={() => setActiveSummaryId(null)}
+        session={session}
+      />
     </div>
   );
 }
