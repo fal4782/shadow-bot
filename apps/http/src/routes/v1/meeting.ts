@@ -88,7 +88,7 @@ meetingRouter.get("/:id", async (req, res) => {
       link: recording.link,
       recordingStatus: recording.status,
       fileName: recording.fileName,
-      errorMetadata: recording.errorMetadata,
+      recordingError: recording.errorMetadata,
       createdAt: recording.createdAt,
       updatedAt: recording.updatedAt,
       transcript: recording.transcript
@@ -99,7 +99,7 @@ meetingRouter.get("/:id", async (req, res) => {
           transcriptWithTimeStamps:
             recording.transcript.transcriptWithTimeStamps,
           summary: recording.transcript.summary,
-          failureReason: recording.transcript.failureReason,
+          transcriptOrSummaryError: recording.transcript.failureReason,
         }
         : null,
       recentChats: recording.chatSessions,
@@ -127,7 +127,10 @@ meetingRouter.get("/:id/status", async (req, res) => {
       select: {
         id: true,
         status: true,
-        transcript: { select: { transcriptionStatus: true, summaryStatus: true } },
+        errorMetadata: true,
+        transcript: {
+          select: { transcriptionStatus: true, summaryStatus: true, failureReason: true },
+        },
       },
     });
 
@@ -141,6 +144,8 @@ meetingRouter.get("/:id/status", async (req, res) => {
       recordingStatus: recording.status,
       transcriptionStatus: recording.transcript?.transcriptionStatus || null,
       summaryStatus: recording.transcript?.summaryStatus || null,
+      recordingError: recording.errorMetadata,
+      transcriptOrSummaryError: recording.transcript?.failureReason || null,
     });
   } catch (error) {
     console.error("Error fetching status:", error);
@@ -176,7 +181,7 @@ meetingRouter.get("/:id/transcript", async (req, res) => {
       transcript: transcript.transcript,
       transcriptWithTimeStamps: transcript.transcriptWithTimeStamps,
       summary: transcript.summary,
-      failureReason: transcript.failureReason,
+      transcriptOrSummaryError: transcript.failureReason,
       updatedAt: transcript.updatedAt,
     });
   } catch (error) {
