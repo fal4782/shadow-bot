@@ -48,7 +48,9 @@ model Transcript {
   summary                  Json?
   createdAt                DateTime         @default(now())
   updatedAt                DateTime         @updatedAt
-  status                   TranscriptStatus @default(PENDING)
+  transcriptionStatus      TranscriptStatus @default(PENDING)
+  summaryStatus            TranscriptStatus @default(PENDING)
+  failureReason            String?
 }
 
 model ChatSession {
@@ -81,6 +83,7 @@ enum RecordingStatus {
 
 enum TranscriptStatus {
   PENDING
+  IN_PROGRESS
   COMPLETED
   FAILED
 }
