@@ -47,7 +47,7 @@ export function Dashboard({ session }: { session: any }) {
   // Derive active bot status
   useEffect(() => {
     const active = recordings.find((r) =>
-      ["PENDING", "ASKING_TO_JOIN", "JOINED"].includes(r.status),
+      ["PENDING", "ASKING_TO_JOIN", "JOINED"].includes(r.recordingStatus),
     );
     setActiveRecording(active || null);
     setActiveBotContainerId(active ? active.id : null);
@@ -271,7 +271,9 @@ export function Dashboard({ session }: { session: any }) {
               className="pointer-events-auto bg-white/90 backdrop-blur-xl border border-primary-200/40 shadow-2xl shadow-text-900/10 rounded-full px-6 py-3.5 flex items-center gap-6 cursor-pointer group hover:scale-[1.02] hover:bg-white transition-all duration-300 ring-1 ring-black/5"
             >
               {(() => {
-                const statusConfig = getMeetingStatus(activeRecording.status);
+                const statusConfig = getMeetingStatus(
+                  activeRecording.recordingStatus,
+                );
                 const StatusIcon = statusConfig.icon;
                 return (
                   <>

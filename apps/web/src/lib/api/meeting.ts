@@ -1,5 +1,22 @@
 import { apiClient } from "./client";
 
+export interface Meeting {
+  id: string;
+  link: string;
+  recordingStatus:
+    | "PENDING"
+    | "ASKING_TO_JOIN"
+    | "JOINED"
+    | "COMPLETED"
+    | "FAILED"
+    | "TIMEOUT";
+  fileName: string | null;
+  transcriptionStatus: "PENDING" | "IN_PROGRESS" | "COMPLETED" | "FAILED";
+  summaryStatus: "PENDING" | "IN_PROGRESS" | "COMPLETED" | "FAILED";
+  createdAt: string;
+  updatedAt: string;
+}
+
 export const meetingApi = {
   joinMeeting: (link: string, token: string) =>
     apiClient
