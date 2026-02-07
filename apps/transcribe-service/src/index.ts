@@ -51,10 +51,15 @@ async function processTranscription(payload: TranscriptionPayload) {
         // Create initial PENDING record
         await prisma.transcript.upsert({
             where: { recordingId },
-            update: { status: "PENDING" },
+            update: {
+                transcriptionStatus: "IN_PROGRESS",
+                summaryStatus: "PENDING",
+                failureReason: null
+            },
             create: {
                 recordingId,
-                status: "PENDING"
+                transcriptionStatus: "IN_PROGRESS",
+                summaryStatus: "PENDING"
             }
         });
 
@@ -66,14 +71,14 @@ async function processTranscription(payload: TranscriptionPayload) {
             await prisma.transcript.update({
                 where: { recordingId },
                 data: {
-                    status: "FAILED",
+                    transcriptionStatus: "FAILED",
                     failureReason: reason
                 }
             });
             return;
         }
 
-        // Format the transcript with timestamps for Gemini
+        // ... (formatting logic same)
         const transcriptWithTimestamps = transcription.words
             .map((word: any) => {
                 const time = formatTime(word.start);
@@ -81,10 +86,20 @@ async function processTranscription(payload: TranscriptionPayload) {
             })
             .join("");
 
-        // Plain text transcript
         const plainTranscript = transcription.words
             .map((word: any) => word.text)
             .join("");
+
+        // Update transcription to COMPLETED and summary to IN_PROGRESS
+        await prisma.transcript.update({
+            where: { recordingId },
+            data: {
+                transcript: plainTranscript,
+                transcriptWithTimeStamps: transcriptWithTimestamps,
+                transcriptionStatus: "COMPLETED",
+                summaryStatus: "IN_PROGRESS"
+            }
+        });
 
         console.log(`\n--- Processing Transcription for ${recordingId} ---\n`);
 
@@ -92,26 +107,29 @@ async function processTranscription(payload: TranscriptionPayload) {
         const summary = await summarizeMeeting(plainTranscript);
         console.log(JSON.stringify(summary, null, 2));
 
-        // Update with results
+        // Update summary status to COMPLETED
         await prisma.transcript.update({
             where: { recordingId },
             data: {
-                transcript: plainTranscript,
-                transcriptWithTimeStamps: transcriptWithTimestamps,
-                summary: summary as any, // Cast to any to satisfy Json type if needed
-                status: "COMPLETED"
+                summary: summary as any,
+                summaryStatus: "COMPLETED"
             }
         });
 
-        console.log(`Successfully processed and saved transcription for ${recordingId}`);
+        console.log(`Successfully processed and saved transcription and summary for ${recordingId}`);
 
     } catch (error: any) {
         const errorMessage = error instanceof Error ? error.message : String(error);
-        console.error(`Error processing transcription for ${recordingId}:`, errorMessage);
+        console.error(`Error processing task for ${recordingId}:`, errorMessage);
+
+        // Find current status to know what failed
+        const currentTranscript = await prisma.transcript.findUnique({ where: { recordingId } });
+
         await prisma.transcript.update({
             where: { recordingId },
             data: {
-                status: "FAILED",
+                transcriptionStatus: currentTranscript?.transcriptionStatus === "IN_PROGRESS" ? "FAILED" : currentTranscript?.transcriptionStatus,
+                summaryStatus: currentTranscript?.summaryStatus === "IN_PROGRESS" ? "FAILED" : currentTranscript?.summaryStatus,
                 failureReason: errorMessage
             }
         }).catch((err: any) => console.error("Failed to update status to FAILED:", err));

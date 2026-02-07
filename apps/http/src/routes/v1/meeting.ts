@@ -32,7 +32,7 @@ meetingRouter.get("/", async (req, res) => {
       where: { userId },
       orderBy: { createdAt: "desc" },
       include: {
-        transcript: { select: { status: true, summary: true } },
+        transcript: { select: { transcriptionStatus: true, summaryStatus: true } },
       },
     });
 
@@ -41,8 +41,8 @@ meetingRouter.get("/", async (req, res) => {
       link: rec.link,
       status: rec.status,
       fileName: rec.fileName,
-      hasTranscript: rec.transcript?.status === "COMPLETED",
-      summary: rec.transcript?.summary || null,
+      transcriptionStatus: rec.transcript?.transcriptionStatus || "PENDING",
+      summaryStatus: rec.transcript?.summaryStatus || "PENDING",
       createdAt: rec.createdAt,
       updatedAt: rec.updatedAt,
     }));
@@ -93,11 +93,13 @@ meetingRouter.get("/:id", async (req, res) => {
       updatedAt: recording.updatedAt,
       transcript: recording.transcript
         ? {
-          status: recording.transcript.status,
+          transcriptionStatus: recording.transcript.transcriptionStatus,
+          summaryStatus: recording.transcript.summaryStatus,
           transcript: recording.transcript.transcript,
           transcriptWithTimeStamps:
             recording.transcript.transcriptWithTimeStamps,
           summary: recording.transcript.summary,
+          failureReason: recording.transcript.failureReason,
         }
         : null,
       recentChats: recording.chatSessions,
@@ -125,7 +127,7 @@ meetingRouter.get("/:id/status", async (req, res) => {
       select: {
         id: true,
         status: true,
-        transcript: { select: { status: true } },
+        transcript: { select: { transcriptionStatus: true, summaryStatus: true } },
       },
     });
 
@@ -137,7 +139,8 @@ meetingRouter.get("/:id/status", async (req, res) => {
     res.json({
       id: recording.id,
       recordingStatus: recording.status,
-      transcriptStatus: recording.transcript?.status || null,
+      transcriptionStatus: recording.transcript?.transcriptionStatus || null,
+      summaryStatus: recording.transcript?.summaryStatus || null,
     });
   } catch (error) {
     console.error("Error fetching status:", error);
@@ -168,10 +171,12 @@ meetingRouter.get("/:id/transcript", async (req, res) => {
 
     res.json({
       recordingId: transcript.recordingId,
-      status: transcript.status,
+      transcriptionStatus: transcript.transcriptionStatus,
+      summaryStatus: transcript.summaryStatus,
       transcript: transcript.transcript,
       transcriptWithTimeStamps: transcript.transcriptWithTimeStamps,
       summary: transcript.summary,
+      failureReason: transcript.failureReason,
       updatedAt: transcript.updatedAt,
     });
   } catch (error) {
