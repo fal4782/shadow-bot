@@ -389,9 +389,10 @@ export function Dashboard({ session }: { session: any }) {
                     initial={{ opacity: 0, y: -10 }}
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0, y: -10 }}
-                    className="text-sm font-bold text-red-500 flex items-center gap-2 bg-red-50 px-4 py-2 rounded-full border border-red-100 shadow-sm"
+                    className="text-sm font-bold text-red-700/70 flex items-center gap-2 bg-white/40 backdrop-blur-md px-6 py-2.5 rounded-full border border-red-500/10 shadow-sm"
                   >
-                    <AlertCircle className="w-4 h-4" /> {linkError}
+                    <AlertCircle className="w-4 h-4 text-red-500/60" />{" "}
+                    {linkError}
                   </motion.p>
                 ) : (
                   // Helper text when no error

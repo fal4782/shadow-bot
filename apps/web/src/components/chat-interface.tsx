@@ -253,8 +253,8 @@ export function ChatInterface({
 
             {/* Error Message */}
             {error && (
-              <div className="px-6 py-2 bg-red-50 border-t border-red-100 flex items-center gap-2 text-red-600 text-xs font-bold">
-                <AlertCircle className="w-3.5 h-3.5" />
+              <div className="px-6 py-3 bg-white/40 backdrop-blur-md border-t border-red-500/10 flex items-center gap-2 text-red-700/70 text-xs font-bold">
+                <AlertCircle className="w-3.5 h-3.5 text-red-500/60" />
                 {error}
               </div>
             )}

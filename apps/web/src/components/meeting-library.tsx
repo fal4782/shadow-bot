@@ -396,16 +396,16 @@ export function MeetingLibrary({ session }: { session: any }) {
                               </div>
 
                               {rec.recordingError && (
-                                <div className="flex items-center gap-2 text-red-500 text-xs font-bold bg-red-50 px-3 py-1 rounded-lg border border-red-100 w-fit mt-2">
-                                  <AlertTriangle className="w-3.5 h-3.5" />
+                                <div className="flex items-center gap-2 text-red-700/70 text-[11px] font-bold bg-white/40 backdrop-blur-md px-3 py-1.5 rounded-xl border border-red-500/10 w-fit mt-3 shadow-sm">
+                                  <AlertTriangle className="w-3.5 h-3.5 text-red-500/60" />
                                   <span>
                                     {cleanupErrorMessage(rec.recordingError)}
                                   </span>
                                 </div>
                               )}
                               {rec.transcriptOrSummaryError && (
-                                <div className="flex items-center gap-2 text-amber-600 text-xs font-bold bg-amber-50 px-3 py-1 rounded-lg border border-amber-100 w-fit mt-2">
-                                  <AlertCircle className="w-3.5 h-3.5" />
+                                <div className="flex items-center gap-2 text-amber-700/70 text-[11px] font-bold bg-white/40 backdrop-blur-md px-3 py-1.5 rounded-xl border border-amber-500/10 w-fit mt-3 shadow-sm">
+                                  <AlertCircle className="w-3.5 h-3.5 text-amber-500/60" />
                                   <span>
                                     {cleanupErrorMessage(
                                       rec.transcriptOrSummaryError,
@@ -455,7 +455,7 @@ export function MeetingLibrary({ session }: { session: any }) {
                           ) : rec.summaryStatus === "FAILED" ? (
                             <button
                               disabled
-                              className="flex items-center gap-2 px-5 py-3 rounded-xl bg-red-50 border border-red-100 text-red-400 font-bold text-sm cursor-not-allowed opacity-80"
+                              className="flex items-center gap-2 px-5 py-3 rounded-xl bg-white/40 backdrop-blur-md border border-red-500/10 text-red-500/60 font-bold text-sm cursor-not-allowed opacity-80"
                             >
                               <AlertTriangle className="w-4 h-4" />
                               <span>Summary Failed</span>
@@ -482,7 +482,7 @@ export function MeetingLibrary({ session }: { session: any }) {
                           ) : rec.transcriptionStatus === "FAILED" ? (
                             <button
                               disabled
-                              className="flex items-center gap-2 px-5 py-3 rounded-xl bg-red-50 border border-red-100 text-red-400 font-bold text-sm cursor-not-allowed opacity-80"
+                              className="flex items-center gap-2 px-5 py-3 rounded-xl bg-white/40 backdrop-blur-md border border-red-500/10 text-red-500/60 font-bold text-sm cursor-not-allowed opacity-80"
                             >
                               <AlertTriangle className="w-4 h-4" />
                               <span>Transcript Failed</span>
