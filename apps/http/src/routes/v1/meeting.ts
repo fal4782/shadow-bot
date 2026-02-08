@@ -32,7 +32,7 @@ meetingRouter.get("/", async (req, res) => {
       where: { userId },
       orderBy: { createdAt: "desc" },
       include: {
-        transcript: { select: { transcriptionStatus: true, summaryStatus: true } },
+        transcript: { select: { transcriptionStatus: true, summaryStatus: true, failureReason: true } },
       },
     });
 
@@ -40,11 +40,13 @@ meetingRouter.get("/", async (req, res) => {
       id: rec.id,
       link: rec.link,
       recordingStatus: rec.status || "PENDING",
+      recordingError: rec.errorMetadata || null,
       fileName: rec.fileName,
-      transcriptionStatus: rec.transcript?.transcriptionStatus || "PENDING",
-      summaryStatus: rec.transcript?.summaryStatus || "PENDING",
+      transcriptionStatus: rec.transcript?.transcriptionStatus,
+      summaryStatus: rec.transcript?.summaryStatus,
       createdAt: rec.createdAt,
       updatedAt: rec.updatedAt,
+      transcriptOrSummaryError: rec.transcript?.failureReason || null,
     }));
 
     res.json(meetings);
@@ -93,8 +95,8 @@ meetingRouter.get("/:id", async (req, res) => {
       updatedAt: recording.updatedAt,
       transcript: recording.transcript
         ? {
-          transcriptionStatus: recording.transcript.transcriptionStatus || "PENDING",
-          summaryStatus: recording.transcript.summaryStatus || "PENDING",
+          transcriptionStatus: recording.transcript.transcriptionStatus,
+          summaryStatus: recording.transcript.summaryStatus,
           transcript: recording.transcript.transcript,
           transcriptWithTimeStamps:
             recording.transcript.transcriptWithTimeStamps,
@@ -142,8 +144,8 @@ meetingRouter.get("/:id/status", async (req, res) => {
     res.json({
       id: recording.id,
       recordingStatus: recording.status || "PENDING",
-      transcriptionStatus: recording.transcript?.transcriptionStatus || "PENDING",
-      summaryStatus: recording.transcript?.summaryStatus || "PENDING",
+      transcriptionStatus: recording.transcript?.transcriptionStatus,
+      summaryStatus: recording.transcript?.summaryStatus,
       recordingError: recording.errorMetadata || null,
       transcriptOrSummaryError: recording.transcript?.failureReason || null,
     });

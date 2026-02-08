@@ -1,7 +1,7 @@
 import { Router } from "express";
 import { prisma } from "@repo/db/client";
 import { ChatGoogleGenerativeAI } from "@langchain/google-genai";
-import { HumanMessage, SystemMessage } from "@langchain/core/messages";
+import { AIMessage, HumanMessage, SystemMessage } from "@langchain/core/messages";
 import { ChatStartSchema, ChatMessageSchema } from "@repo/types";
 
 const chatRouter: Router = Router();
@@ -113,7 +113,7 @@ chatRouter.post("/message", async (req, res) => {
             ...chatSession.messages.map((msg) =>
                 msg.role === "USER"
                     ? new HumanMessage(msg.content)
-                    : new SystemMessage(msg.content)
+                    : new AIMessage(msg.content)
             ),
             new HumanMessage(message),
         ];
