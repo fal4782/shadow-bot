@@ -39,6 +39,7 @@ meetingRouter.get("/", async (req, res) => {
     const meetings = recordings.map((rec) => ({
       id: rec.id,
       link: rec.link,
+      title: rec.title,
       recordingStatus: rec.status || "PENDING",
       recordingError: rec.errorMetadata || null,
       fileName: rec.fileName,
@@ -88,6 +89,7 @@ meetingRouter.get("/:id", async (req, res) => {
     res.json({
       id: recording.id,
       link: recording.link,
+      title: recording.title,
       recordingStatus: recording.status || "PENDING",
       fileName: recording.fileName,
       recordingError: recording.errorMetadata,
@@ -213,6 +215,7 @@ meetingRouter.post("/join", async (req, res) => {
       data: {
         userId,
         link,
+        title: parsed.data.title || link,
       },
     });
 
@@ -220,6 +223,7 @@ meetingRouter.post("/join", async (req, res) => {
       userId,
       link,
       recordingId: recording.id,
+      title: parsed.data.title || link,
     };
 
     await redisClient.rPush("join_meet_queue", JSON.stringify(payload));

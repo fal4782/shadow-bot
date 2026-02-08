@@ -33,6 +33,7 @@ model Recording {
   createdAt     DateTime        @default(now())
   updatedAt     DateTime        @updatedAt
   fileName      String?
+  title         String?
   status        RecordingStatus @default(PENDING)
   errorMetadata Json?
   transcript    Transcript?

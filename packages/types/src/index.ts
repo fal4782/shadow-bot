@@ -21,6 +21,7 @@ export const GoogleAuthSchema = z.object({
 // Meeting
 export const JoinMeetingSchema = z.object({
   link: z.string().url(),
+  title: z.string().optional(),
 });
 
 // Chat
@@ -40,6 +41,7 @@ export interface JoinMeetingPayload {
   recordingId: string;
   timestamp?: string;
   maxDurationMins?: number;
+  title?: string;
 }
 
 export interface TranscriptionPayload {
