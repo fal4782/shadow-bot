@@ -3,6 +3,8 @@ import "dotenv/config";
 import { createReadStream, statSync } from "fs";
 import { summarizeMeeting } from "./summarize";
 import { detailedSummarizeMeeting } from "./detailedSummarize";
+import { generateTags } from "./tags";
+import { normalizeTags } from "@repo/common";
 
 import { createClient } from "redis";
 import path from "path";
@@ -57,13 +59,15 @@ async function processTranscription(payload: TranscriptionPayload) {
                 transcriptionStatus: "IN_PROGRESS",
                 summaryStatus: "PENDING",
                 detailedSummaryStatus: "PENDING",
+                tagsStatus: "PENDING",
                 failureReason: null
             },
             create: {
                 recordingId,
                 transcriptionStatus: "IN_PROGRESS",
                 summaryStatus: "PENDING",
-                detailedSummaryStatus: "PENDING"
+                detailedSummaryStatus: "PENDING",
+                tagsStatus: "PENDING"
             }
         });
 
@@ -134,6 +138,27 @@ async function processTranscription(payload: TranscriptionPayload) {
             }
         });
 
+        console.log("\n--- AI Tags ---\n");
+        await prisma.transcript.update({
+            where: { recordingId },
+            data: {
+                tagsStatus: "IN_PROGRESS"
+            }
+        });
+
+        const rawTags = await generateTags(plainTranscript, summary);
+        const normalizedTags = normalizeTags(rawTags);
+        console.log(JSON.stringify(normalizedTags));
+
+        // Update tags
+        await prisma.transcript.update({
+            where: { recordingId },
+            data: {
+                tags: normalizedTags,
+                tagsStatus: "COMPLETED"
+            }
+        });
+
         console.log(`Successfully processed and saved transcription and summary for ${recordingId}`);
 
     } catch (error: any) {
@@ -149,6 +174,7 @@ async function processTranscription(payload: TranscriptionPayload) {
                 transcriptionStatus: currentTranscript?.transcriptionStatus === "IN_PROGRESS" ? "FAILED" : currentTranscript?.transcriptionStatus,
                 summaryStatus: currentTranscript?.summaryStatus === "IN_PROGRESS" ? "FAILED" : currentTranscript?.summaryStatus,
                 detailedSummaryStatus: currentTranscript?.detailedSummaryStatus === "IN_PROGRESS" ? "FAILED" : currentTranscript?.detailedSummaryStatus,
+                tagsStatus: currentTranscript?.tagsStatus === "IN_PROGRESS" ? "FAILED" : currentTranscript?.tagsStatus,
                 failureReason: errorMessage
             }
         }).catch((err: any) => console.error("Failed to update status to FAILED:", err));

@@ -57,6 +57,9 @@ export const MeetingSummarySchema = z.object({
   actionItems: z.array(z.string()).describe("List of clear tasks or follow-up items with owners if mentioned"),
 });
 
+// Tags
+export const TagsSchema = z.array(z.string()).describe("A list of 3-7 tags that capture the essence of the meeting");
+
 // Inferred Types
 export type SignupInput = z.infer<typeof SignupSchema>;
 export type LoginInput = z.infer<typeof LoginSchema>;
@@ -65,3 +68,4 @@ export type JoinMeetingInput = z.infer<typeof JoinMeetingSchema>;
 export type ChatStartInput = z.infer<typeof ChatStartSchema>;
 export type ChatMessageInput = z.infer<typeof ChatMessageSchema>;
 export type MeetingSummary = z.infer<typeof MeetingSummarySchema>;
+export type Tags = z.infer<typeof TagsSchema>;

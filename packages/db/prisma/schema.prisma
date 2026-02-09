@@ -54,6 +54,8 @@ model Transcript {
   failureReason            String?
   detailedSummary          String?
   detailedSummaryStatus    TranscriptStatus @default(PENDING)
+  tags                     String[]
+  tagsStatus               TranscriptStatus @default(PENDING)
 }
 
 model ChatSession {
