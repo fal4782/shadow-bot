@@ -2,6 +2,8 @@ import { ElevenLabsClient } from "@elevenlabs/elevenlabs-js";
 import "dotenv/config";
 import { createReadStream, statSync } from "fs";
 import { summarizeMeeting } from "./summarize";
+import { detailedSummarizeMeeting } from "./detailedSummarize";
+
 import { createClient } from "redis";
 import path from "path";
 import { prisma } from "@repo/db/client";
@@ -54,12 +56,14 @@ async function processTranscription(payload: TranscriptionPayload) {
             update: {
                 transcriptionStatus: "IN_PROGRESS",
                 summaryStatus: "PENDING",
+                detailedSummaryStatus: "PENDING",
                 failureReason: null
             },
             create: {
                 recordingId,
                 transcriptionStatus: "IN_PROGRESS",
-                summaryStatus: "PENDING"
+                summaryStatus: "PENDING",
+                detailedSummaryStatus: "PENDING"
             }
         });
 
@@ -97,7 +101,8 @@ async function processTranscription(payload: TranscriptionPayload) {
                 transcript: plainTranscript,
                 transcriptWithTimeStamps: transcriptWithTimestamps,
                 transcriptionStatus: "COMPLETED",
-                summaryStatus: "IN_PROGRESS"
+                summaryStatus: "IN_PROGRESS",
+                detailedSummaryStatus: "IN_PROGRESS"
             }
         });
 
@@ -116,6 +121,19 @@ async function processTranscription(payload: TranscriptionPayload) {
             }
         });
 
+        console.log("\n--- Detailed Meeting Summary ---\n");
+        const detailedSummary = await detailedSummarizeMeeting(plainTranscript);
+        console.log(detailedSummary);
+
+        // Update detailed summary status to COMPLETED
+        await prisma.transcript.update({
+            where: { recordingId },
+            data: {
+                detailedSummary: detailedSummary,
+                detailedSummaryStatus: "COMPLETED"
+            }
+        });
+
         console.log(`Successfully processed and saved transcription and summary for ${recordingId}`);
 
     } catch (error: any) {
@@ -130,6 +148,7 @@ async function processTranscription(payload: TranscriptionPayload) {
             data: {
                 transcriptionStatus: currentTranscript?.transcriptionStatus === "IN_PROGRESS" ? "FAILED" : currentTranscript?.transcriptionStatus,
                 summaryStatus: currentTranscript?.summaryStatus === "IN_PROGRESS" ? "FAILED" : currentTranscript?.summaryStatus,
+                detailedSummaryStatus: currentTranscript?.detailedSummaryStatus === "IN_PROGRESS" ? "FAILED" : currentTranscript?.detailedSummaryStatus,
                 failureReason: errorMessage
             }
         }).catch((err: any) => console.error("Failed to update status to FAILED:", err));
