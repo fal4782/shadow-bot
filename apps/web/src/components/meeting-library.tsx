@@ -222,6 +222,14 @@ export function MeetingLibrary({ session }: { session: any }) {
 
           <div className="flex items-center gap-6">
             <button
+              onClick={() => router.push("/chat")}
+              className="hidden md:flex items-center gap-2 px-6 py-2.5 rounded-xl text-sm font-bold text-primary-700 bg-white border border-primary-200 hover:bg-primary-50 hover:border-primary-300 transition-all active:scale-95 shadow-sm"
+            >
+              <Sparkles className="w-4 h-4" />
+              AI Chat
+            </button>
+
+            <button
               onClick={() => router.push("/")}
               className="hidden md:flex items-center gap-2 px-6 py-2.5 rounded-xl text-sm font-bold text-primary-700 bg-white border border-primary-200 hover:bg-primary-50 hover:border-primary-300 transition-all active:scale-95 shadow-sm"
             >
