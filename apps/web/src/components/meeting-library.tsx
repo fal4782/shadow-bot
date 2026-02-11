@@ -68,16 +68,16 @@ export function MeetingLibrary({ session }: { session: any }) {
               prev.map((r) =>
                 r.id === activeMeeting.id
                   ? {
-                      ...r,
-                      recordingStatus: statusData.recordingStatus,
-                      transcriptionStatus: statusData.transcriptionStatus,
-                      summaryStatus: statusData.summaryStatus,
-                      tagsStatus: statusData.tagsStatus,
-                      tags: statusData.tags,
-                      recordingError: statusData.recordingError,
-                      transcriptOrSummaryError:
-                        statusData.transcriptOrSummaryError,
-                    }
+                    ...r,
+                    recordingStatus: statusData.recordingStatus,
+                    transcriptionStatus: statusData.transcriptionStatus,
+                    summaryStatus: statusData.summaryStatus,
+                    tagsStatus: statusData.tagsStatus,
+                    tags: statusData.tags,
+                    recordingError: statusData.recordingError,
+                    transcriptOrSummaryError:
+                      statusData.transcriptOrSummaryError,
+                  }
                   : r,
               ),
             );
@@ -333,7 +333,7 @@ export function MeetingLibrary({ session }: { session: any }) {
                             {/* Play Button / Status Indicator */}
                             <div className="relative shrink-0">
                               {rec.recordingStatus === "COMPLETED" &&
-                              rec.fileName ? (
+                                rec.fileName ? (
                                 <a
                                   href={`${process.env.NEXT_PUBLIC_API_URL}/recordings/${rec.fileName}`}
                                   target="_blank"
@@ -467,7 +467,7 @@ export function MeetingLibrary({ session }: { session: any }) {
                             <span>
                               {chatLoadingId === rec.id
                                 ? "Opening..."
-                                : "Analyst"}
+                                : "Ask"}
                             </span>
                           </button>
 
@@ -556,7 +556,7 @@ export function MeetingLibrary({ session }: { session: any }) {
         session={session}
         title={
           recordings.find((r) => r.id === activeChatId)?.title ||
-          "Chat with Analyst"
+          "Ask AI"
         }
       />
     </div>
