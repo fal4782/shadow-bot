@@ -5,6 +5,7 @@ import { prisma } from "@repo/db/client";
 import crypto from "crypto";
 import path from "path";
 import fs from "fs";
+import { Writable } from "stream";
 
 const redisClient = createClient();
 const redisListener = createClient();
@@ -88,19 +89,30 @@ export async function listenQueue() {
 
             let isTimedOut = false;
             let isInvalidLink = false;
+            let isDeclined = false;
 
-            // Monitor logs for status changes
+            // Monitor logs for status changes and print to console
             const logStream = await container.logs({
               follow: true,
               stdout: true,
               stderr: true,
-            });
+            }) as any;
 
-            logStream.on("data", async (chunk: Buffer) => {
-              const log = chunk.toString("utf8");
+            const logPrefix = `[Recording ${payload.recordingId}]`;
+
+            const handleLog = async (log: string, isError: boolean) => {
+              if (isError) {
+                process.stderr.write(`${logPrefix} [STDERR] ${log}`);
+              } else {
+                process.stdout.write(`${logPrefix} [STDOUT] ${log}`);
+              }
+
               if (log.includes("ERROR: Invalid meeting ID")) {
                 isInvalidLink = true;
                 console.log(`Detected invalid meeting link for recording ${payload.recordingId}`);
+              } else if (log.includes("Entry declined")) {
+                isDeclined = true;
+                console.log(`Detected entry declined for recording ${payload.recordingId}`);
               } else if (
                 log.includes("Bot is still in the 'Asking to join' state") ||
                 (log.includes("Clicked join button") && log.includes("Ask to join"))
@@ -117,7 +129,26 @@ export async function listenQueue() {
               } else if (log.includes("Timed out waiting to join the meeting")) {
                 isTimedOut = true;
               }
+            };
+
+            const stdoutStream = new Writable({
+              write(chunk, encoding, callback) {
+                handleLog(chunk.toString("utf8"), false)
+                  .then(() => callback())
+                  .catch(callback);
+              }
             });
+
+            const stderrStream = new Writable({
+              write(chunk, encoding, callback) {
+                handleLog(chunk.toString("utf8"), true)
+                  .then(() => callback())
+                  .catch(callback);
+              }
+            });
+
+            // @ts-ignore
+            container.modem.demuxStream(logStream, stdoutStream, stderrStream);
 
             // Handle container exit
             container.wait().then(async (result: any) => {
@@ -126,29 +157,30 @@ export async function listenQueue() {
 
               let finalStatus: "COMPLETED" | "FAILED" | "TIMEOUT" = exitCode === 0 ? "COMPLETED" : "FAILED";
               if (isTimedOut) finalStatus = "TIMEOUT";
-              if (isInvalidLink) finalStatus = "FAILED";
+              if (isInvalidLink || isDeclined) finalStatus = "FAILED";
 
               await prisma.recording.update({
                 where: { id: payload.recordingId },
                 data: {
                   status: finalStatus,
-                  ...(isInvalidLink && { fileName: null }),
-                  ...((exitCode !== 0 || isTimedOut || isInvalidLink) && {
+                  ...(finalStatus !== "COMPLETED" && { fileName: null }),
+                  ...(finalStatus !== "COMPLETED" && {
                     errorMetadata: JSON.stringify({
                       exitCode,
                       isTimedOut,
                       isInvalidLink,
-                      error: isInvalidLink ? "Invalid meeting link" : undefined
+                      isDeclined,
+                      error: isInvalidLink ? "Invalid meeting link" : (isDeclined ? "Entry declined" : undefined)
                     })
                   })
                 }
               });
 
-              // Clean up file if it's an invalid link
-              if (isInvalidLink) {
+              // Clean up file if it was not a successful recording
+              if (finalStatus !== "COMPLETED") {
                 const filePath = path.join(__dirname, "..", "..", "..", "recordings", fileName);
                 if (fs.existsSync(filePath)) {
-                  console.log(`Deleting invalid recording file: ${filePath}`);
+                  console.log(`Deleting unsuccessful recording file (${finalStatus}): ${filePath}`);
                   fs.unlinkSync(filePath);
                 }
               }

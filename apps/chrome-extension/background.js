@@ -1,4 +1,5 @@
-const API_URL = "http://localhost:3005/api/v1";
+const API_BASE_URL = "http://localhost:3005";
+const API_URL = `${API_BASE_URL}/api/v1`;
 const WEB_APP_SESSION_URL = "http://localhost:3000/api/auth/session";
 
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
