@@ -15,6 +15,7 @@ import {
   AlertTriangle,
   Clock,
 } from "lucide-react";
+import { RiGhostSmileLine } from "react-icons/ri";
 import { useRouter } from "next/navigation";
 import { meetingApi } from "@/lib/api/meeting";
 import { getMeetingStatus } from "@/lib/status-utils";
@@ -213,11 +214,11 @@ export function MeetingLibrary({ session }: { session: any }) {
             className="flex items-center gap-4 cursor-pointer group"
             onClick={() => router.push("/")}
           >
-            <div className="w-10 h-10 rounded-xl bg-white border border-text-900/10 flex items-center justify-center shadow-sm group-hover:shadow-md transition-all">
-              <Bot className="text-primary-600 w-6 h-6" />
+            <div className="w-10 h-10 rounded-xl bg-primary-600 text-white flex items-center justify-center shadow-lg shadow-primary-600/20 group-hover:rotate-6 transition-transform">
+              <RiGhostSmileLine className="w-6 h-6" />
             </div>
             <div className="flex flex-col">
-              <span className="text-lg font-black tracking-tight text-text-900 leading-none group-hover:text-primary-700 transition-colors">
+              <span className="text-lg font-black tracking-tight text-text-900 leading-none">
                 Shadow Bot
               </span>
               <span className="text-[10px] font-bold text-text-400 uppercase tracking-widest mt-1">

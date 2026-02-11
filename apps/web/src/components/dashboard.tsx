@@ -13,14 +13,17 @@ import {
   ArrowUpRight,
   Text,
 } from "lucide-react";
+import { RiGhostSmileLine } from "react-icons/ri";
 import Link from "next/link";
 
 import { meetingApi } from "@/lib/api/meeting";
 import { getMeetingStatus } from "@/lib/status-utils";
 import { UserProfileBadge } from "./user-profile-badge";
 import { cleanupErrorMessage } from "@/lib/utils/error-utils";
+import { useModal } from "@/context/modal-context";
 
 export function Dashboard({ session }: { session: any }) {
+  const { openModal } = useModal();
   const [meetLink, setMeetLink] = useState("");
   const [isDeploying, setIsDeploying] = useState(false);
   const [recordings, setRecordings] = useState<any[]>([]);
@@ -234,7 +237,7 @@ export function Dashboard({ session }: { session: any }) {
           className="absolute top-8 sm:top-12 left-6 sm:left-12 flex items-center gap-2 group cursor-default"
         >
           <div className="w-8 h-8 rounded-lg bg-primary-600 text-white flex items-center justify-center shadow-lg shadow-primary-600/20 group-hover:rotate-6 transition-transform">
-            <Bot className="w-5 h-5" />
+            <RiGhostSmileLine className="w-5 h-5" />
           </div>
           <span className="font-black text-xl tracking-tighter text-text-900">
             Shadow Bot
@@ -249,12 +252,15 @@ export function Dashboard({ session }: { session: any }) {
         <div className="w-full max-w-4xl text-center space-y-12">
           {/* Hero Content */}
           <div className="space-y-4 relative">
-            <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white border border-primary-100 shadow-sm mb-4">
+            <button
+              onClick={openModal}
+              className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white border border-primary-100 shadow-sm mb-4 hover:bg-primary-50 transition-colors cursor-pointer active:scale-95"
+            >
               <span className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
               <span className="text-xs font-bold text-text-500 uppercase tracking-widest">
                 Public Beta
               </span>
-            </div>
+            </button>
 
             <h1 className="text-4xl md:text-6xl lg:text-7xl font-black text-text-900 tracking-tighter leading-[0.95] relative z-20">
               Your AI meeting

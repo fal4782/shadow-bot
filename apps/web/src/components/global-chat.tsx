@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
-import { motion, AnimatePresence, LayoutGroup } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import {
   Send,
   Sparkles,
@@ -11,9 +11,10 @@ import {
   MessageSquare,
   Clock,
   Menu,
-  X,
   ChevronRight,
 } from "lucide-react";
+import { RiGhostSmileLine } from "react-icons/ri";
+import Link from "next/link";
 import { queryApi, QueryMessage, QuerySessionListItem } from "@/lib/api/query";
 import ReactMarkdown from "react-markdown";
 import { UserProfileBadge } from "./user-profile-badge";
@@ -170,14 +171,17 @@ export function GlobalChat({ session }: { session: any }) {
             className="fixed md:relative z-40 w-[280px] h-full bg-white/60 backdrop-blur-2xl border-r border-text-900/5 flex flex-col"
           >
             {/* Sidebar Branding - Restored */}
-            <div className="p-8 pb-4 flex items-center gap-3">
+            <Link
+              href="/"
+              className="p-8 pb-4 flex items-center gap-3 hover:opacity-80 transition-opacity"
+            >
               <div className="w-8 h-8 rounded-lg bg-primary-600 text-white flex items-center justify-center shadow-lg shadow-primary-600/20">
-                <Bot className="w-5 h-5" />
+                <RiGhostSmileLine className="w-5 h-5" />
               </div>
               <span className="font-black text-xl tracking-tighter text-text-900">
                 Shadow Bot
               </span>
-            </div>
+            </Link>
 
             {/* New Chat Button */}
             <div className="px-4 py-4">
