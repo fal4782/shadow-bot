@@ -14,7 +14,7 @@ jest.mock('@repo/db/client', () => ({
         queryMessage: {
             create: jest.fn(),
         },
-        transcript: {
+        recording: {
             findMany: jest.fn(),
         },
     },
@@ -37,6 +37,19 @@ jest.mock('@langchain/google-genai', () => ({
             content: 'This is an AI response',
         }),
     })),
+}));
+
+jest.mock('../utils/vectorSearch', () => ({
+    searchSimilarChunks: jest.fn().mockResolvedValue([]),
+}));
+
+jest.mock('../utils/parseTimeFilter', () => ({
+    parseTimeFilter: jest.fn().mockResolvedValue({
+        afterDaysAgo: null,
+        beforeDaysAgo: null,
+        limit: null,
+    }),
+    buildPrismaDateFilter: jest.fn().mockReturnValue({}),
 }));
 
 const app = express();
@@ -67,7 +80,7 @@ describe('Query Routes', () => {
             };
 
             (prisma.querySession.create as jest.Mock).mockResolvedValue(mockSession);
-            (prisma.transcript.findMany as jest.Mock).mockResolvedValue([]);
+            (prisma.recording.findMany as jest.Mock).mockResolvedValue([]);
             (prisma.queryMessage.create as jest.Mock).mockResolvedValue({ id: 'msg-1' });
 
             const response = await request(app)
@@ -92,7 +105,7 @@ describe('Query Routes', () => {
             };
 
             (prisma.querySession.findUnique as jest.Mock).mockResolvedValue(mockSession);
-            (prisma.transcript.findMany as jest.Mock).mockResolvedValue([]);
+            (prisma.recording.findMany as jest.Mock).mockResolvedValue([]);
             (prisma.queryMessage.create as jest.Mock).mockResolvedValue({ id: 'msg-1' });
 
             const response = await request(app)

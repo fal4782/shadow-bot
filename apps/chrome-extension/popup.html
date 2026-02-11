@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta charset="UTF-8">
+  <title>Shadow Bot</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+  <div class="container">
+    <div class="header">
+      <img src="icons/logo.png" alt="Shadow Bot" class="logo-img">
+      <h1 class="title">Shadow Bot</h1>
+    </div>
+
+    <!-- Loading View -->
+    <div id="loadingView" class="view active">
+      <div class="loading-content">
+        <div class="loader"></div>
+        <p>Checking session...</p>
+      </div>
+    </div>
+
+    <!-- Login View -->
+    <div id="loginView" class="view">
+      <p>Log in to your Shadow Bot account on the web to start recording meetings from your browser.</p>
+      <button id="openWebAppBtn">Go to Web Application</button>
+      <button id="retrySessionBtn" class="secondary-button">Already logged in? Refresh</button>
+    </div>
+
+    <!-- Join View -->
+    <div id="joinView" class="view">
+
+      <!-- Active Meetings Banner -->
+      <div id="activeMeetings" class="active-meetings" style="display: none;">
+        <div class="active-meetings-header">
+          <div class="pulse-dot"></div>
+          <span class="active-meetings-title">Active Recordings</span>
+        </div>
+        <div id="activeMeetingsList" class="active-meetings-list"></div>
+      </div>
+
+      <!-- Detected URL Banner -->
+      <div id="detectedUrlBanner" class="detected-url-banner" style="display: none;">
+        <div class="detected-url-icon">🔗</div>
+        <div class="detected-url-content">
+          <span class="detected-url-label">Detected from current tab</span>
+          <span id="detectedUrlText" class="detected-url-text"></span>
+        </div>
+        <button id="useDetectedUrlBtn" class="detected-url-btn">Use</button>
+      </div>
+
+      <form id="joinForm">
+        <div class="form-group">
+          <label for="meetingLink">Meeting Link</label>
+          <input type="url" id="meetingLink" placeholder="https://meet.google.com/xxx-xxxx-xxx" required>
+        </div>
+        <div class="form-group">
+          <label for="meetingTitle">Title (Optional)</label>
+          <input type="text" id="meetingTitle" placeholder="e.g. Weekly Sync">
+        </div>
+        <button type="submit" id="joinBtn">
+          <span>Join Meeting</span>
+        </button>
+      </form>
+      <div id="statusMessage" class="status-message"></div>
+
+      <div class="footer">
+        <p>Logged in as <span id="userName" style="font-weight: 700; color: var(--text-900);">User</span></p>
+      </div>
+    </div>
+  </div>
+
+  <script src="popup.js"></script>
+</body>
+
+</html>
