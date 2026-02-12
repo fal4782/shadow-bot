@@ -2,7 +2,14 @@
 
 import { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { X, FileText, AlertCircle, Loader2, Copy, Check } from "lucide-react";
+import {
+  RiCloseLine,
+  RiFileTextLine,
+  RiErrorWarningLine,
+  RiLoader4Line,
+  RiFileCopyLine,
+  RiCheckLine,
+} from "react-icons/ri";
 import { meetingApi } from "@/lib/api/meeting";
 
 interface TranscriptViewerProps {
@@ -97,7 +104,7 @@ export function TranscriptViewer({
             <div className="flex items-center justify-between px-8 py-5 border-b border-text-200/40 bg-secondary-100/50">
               <div className="flex items-center gap-4">
                 <div className="w-11 h-11 rounded-2xl bg-accent-50 flex items-center justify-center text-accent-600 border border-accent-200/30">
-                  <FileText className="w-5 h-5" />
+                  <RiFileTextLine className="w-5 h-5" />
                 </div>
                 <div>
                   <h2 className="text-lg font-bold text-text-900 tracking-tight">
@@ -113,7 +120,7 @@ export function TranscriptViewer({
                 onClick={onClose}
                 className="w-9 h-9 rounded-xl bg-secondary-200 border border-text-200/40 flex items-center justify-center text-text-400 hover:text-text-700 hover:bg-secondary-300 transition-all"
               >
-                <X className="w-4 h-4" />
+                <RiCloseLine className="w-4 h-4" />
               </button>
             </div>
 
@@ -121,7 +128,7 @@ export function TranscriptViewer({
             <div className="flex-1 overflow-hidden relative flex flex-col">
               {loading ? (
                 <div className="absolute inset-0 flex flex-col items-center justify-center">
-                  <Loader2 className="w-10 h-10 text-accent-500 animate-spin mb-4" />
+                  <RiLoader4Line className="w-10 h-10 text-accent-500 animate-spin mb-4" />
                   <p className="text-text-400 font-medium animate-pulse">
                     Fetching transcript...
                   </p>
@@ -129,7 +136,7 @@ export function TranscriptViewer({
               ) : error ? (
                 <div className="absolute inset-0 flex flex-col items-center justify-center text-center p-8">
                   <div className="w-16 h-16 bg-secondary-200 text-text-500 rounded-3xl flex items-center justify-center mb-4">
-                    <AlertCircle className="w-8 h-8" />
+                    <RiErrorWarningLine className="w-8 h-8" />
                   </div>
                   <h3 className="text-lg font-bold text-text-900 mb-2">
                     Unavailable
@@ -138,12 +145,12 @@ export function TranscriptViewer({
                 </div>
               ) : !data ? (
                 <div className="absolute inset-0 flex items-center justify-center opacity-50">
-                  <Loader2 className="w-8 h-8 animate-spin text-text-300" />
+                  <RiLoader4Line className="w-8 h-8 animate-spin text-text-300" />
                 </div>
               ) : data.status === "FAILED" ? (
                 <div className="flex flex-col items-center justify-center h-full text-center p-8">
                   <div className="w-20 h-20 bg-secondary-200 rounded-3xl flex items-center justify-center mb-6">
-                    <AlertCircle className="w-10 h-10 text-text-400" />
+                    <RiErrorWarningLine className="w-10 h-10 text-text-400" />
                   </div>
                   <h3 className="text-2xl font-bold text-text-900 mb-2">
                     Generation Failed
@@ -158,7 +165,7 @@ export function TranscriptViewer({
                   <div className="relative w-20 h-20 mb-6">
                     <div className="absolute inset-0 bg-accent-200 rounded-full animate-ping opacity-10" />
                     <div className="relative w-full h-full bg-white rounded-full border-2 border-accent-200/50 flex items-center justify-center">
-                      <Loader2 className="w-8 h-8 text-accent-500 animate-spin" />
+                      <RiLoader4Line className="w-8 h-8 text-accent-500 animate-spin" />
                     </div>
                   </div>
                   <h3 className="text-lg font-bold text-text-900 mb-2">
@@ -177,9 +184,9 @@ export function TranscriptViewer({
                       className="flex items-center gap-2 px-3 py-1.5 text-xs font-semibold text-accent-600 bg-accent-50/50 border border-accent-200/40 rounded-lg hover:bg-accent-50 transition-colors shadow-sm"
                     >
                       {copied ? (
-                        <Check className="w-3.5 h-3.5" />
+                        <RiCheckLine className="w-3.5 h-3.5" />
                       ) : (
-                        <Copy className="w-3.5 h-3.5" />
+                        <RiFileCopyLine className="w-3.5 h-3.5" />
                       )}
                       {copied ? "Copied!" : "Copy Text"}
                     </button>

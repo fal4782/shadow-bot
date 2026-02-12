@@ -171,9 +171,9 @@ export function AuthPageLayout({
       >
         {/* Brand */}
         <div className="text-center space-y-6">
-          <Link
+          {/* <Link
             href="/"
-            className="inline-flex items-center gap-2 group mx-auto"
+            className="inline-flex items-center gap-1.5 group mx-auto"
           >
             <span
               className="text-2xl text-text-900 tracking-tight group-hover:opacity-70 transition-opacity"
@@ -181,7 +181,10 @@ export function AuthPageLayout({
             >
               Shadow
             </span>
-          </Link>
+            <span className="text-2xl font-semibold tracking-tight text-text-400 group-hover:opacity-70 transition-opacity">
+              Bot
+            </span>
+          </Link> */}
           <div className="space-y-2">
             <h1
               className="text-3xl text-text-900 tracking-tight"

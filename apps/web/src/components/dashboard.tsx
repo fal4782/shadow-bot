@@ -3,16 +3,16 @@
 import { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
-  Video,
-  Sparkles,
-  ArrowRight,
-  Bot,
-  AlertCircle,
-  History,
-  Activity,
-  ArrowUpRight,
-  Text,
-} from "lucide-react";
+  RiVideoOnLine,
+  RiSparklingLine,
+  RiArrowRightLine,
+  RiRobot2Line,
+  RiErrorWarningLine,
+  RiHistoryLine,
+  RiPulseLine,
+  RiArrowRightUpLine,
+  RiTextBlock,
+} from "react-icons/ri";
 
 import Link from "next/link";
 
@@ -309,7 +309,7 @@ export function Dashboard({ session }: { session: any }) {
                 <div
                   className={`pl-5 pr-3 transition-colors duration-500 ${isFocused ? "text-text-700" : "text-text-300"}`}
                 >
-                  <Video className="w-5 h-5" />
+                  <RiVideoOnLine className="w-5 h-5" />
                 </div>
 
                 <input
@@ -343,9 +343,9 @@ export function Dashboard({ session }: { session: any }) {
                       className="w-full h-14 rounded-xl bg-text-900 text-white font-semibold shadow-md shadow-text-900/10 active:scale-[0.98] transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2.5"
                     >
                       {isDeploying ? (
-                        <Sparkles className="w-4 h-4 animate-spin" />
+                        <RiSparklingLine className="w-4 h-4 animate-spin" />
                       ) : (
-                        <ArrowRight className="w-5 h-5" />
+                        <RiArrowRightLine className="w-5 h-5" />
                       )}
                       <span className="text-lg tracking-tight">
                         {isDeploying ? "Launching..." : "Join Now"}
@@ -368,9 +368,9 @@ export function Dashboard({ session }: { session: any }) {
                       className="h-12 pl-6 pr-8 rounded-xl bg-text-900 text-white font-semibold shadow-md shadow-text-900/10 hover:bg-text-800 hover:scale-[1.02] active:scale-95 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2.5 whitespace-nowrap"
                     >
                       {isDeploying ? (
-                        <Sparkles className="w-4 h-4 animate-spin" />
+                        <RiSparklingLine className="w-4 h-4 animate-spin" />
                       ) : (
-                        <ArrowRight className="w-5 h-5" />
+                        <RiArrowRightLine className="w-5 h-5" />
                       )}
                       <span className="text-base tracking-tight">
                         {isDeploying ? "Launching..." : "Join Now"}
@@ -390,7 +390,8 @@ export function Dashboard({ session }: { session: any }) {
                     exit={{ opacity: 0, y: -10 }}
                     className="text-sm font-medium text-red-500 flex items-center gap-2 bg-red-50/80 backdrop-blur-md px-6 py-2.5 rounded-full border border-red-200/50 shadow-sm"
                   >
-                    <AlertCircle className="w-4 h-4 text-red-400" /> {linkError}
+                    <RiErrorWarningLine className="w-4 h-4 text-red-400" />{" "}
+                    {linkError}
                   </motion.p>
                 ) : (
                   <motion.div
@@ -399,13 +400,13 @@ export function Dashboard({ session }: { session: any }) {
                     className="flex items-center gap-6 text-text-400 text-xs font-medium uppercase tracking-widest bg-white/60 backdrop-blur-md px-6 py-2 rounded-full border border-text-200/50"
                   >
                     <span className="flex items-center gap-2">
-                      <Text className="w-3 h-3" /> Transcription
+                      <RiTextBlock className="w-3 h-3" /> Transcription
                     </span>
                     <span className="flex items-center gap-2">
-                      <Bot className="w-3 h-3" /> Summary
+                      <RiRobot2Line className="w-3 h-3" /> Summary
                     </span>
                     <span className="flex items-center gap-2">
-                      <Sparkles className="w-3 h-3" /> AI Chat
+                      <RiSparklingLine className="w-3 h-3" /> AI Chat
                     </span>
                   </motion.div>
                 )}
@@ -420,7 +421,7 @@ export function Dashboard({ session }: { session: any }) {
               className="group relative inline-flex items-center gap-4 px-6 sm:px-8 py-4 bg-white rounded-full shadow-[0_2px_10px_-2px_rgba(0,0,0,0.04)] hover:shadow-[0_10px_40px_-10px_rgba(0,0,0,0.08)] border border-text-200/50 hover:border-text-300 transition-all duration-300 hover:-translate-y-0.5 w-full sm:w-auto"
             >
               <div className="w-10 h-10 rounded-full bg-secondary-200 flex items-center justify-center text-text-500 group-hover:bg-accent-50 group-hover:text-accent-600 transition-colors duration-300">
-                <Sparkles className="w-5 h-5" />
+                <RiSparklingLine className="w-5 h-5" />
               </div>
 
               <div className="flex flex-col text-left">
@@ -434,7 +435,7 @@ export function Dashboard({ session }: { session: any }) {
 
               <div className="pl-2">
                 <div className="w-8 h-8 rounded-full border border-text-200 flex items-center justify-center group-hover:border-accent-300 group-hover:bg-accent-50 transition-all">
-                  <ArrowRight className="w-4 h-4 text-text-400 group-hover:text-accent-600 group-hover:-rotate-45 transition-all duration-300" />
+                  <RiArrowRightLine className="w-4 h-4 text-text-400 group-hover:text-accent-600 group-hover:-rotate-45 transition-all duration-300" />
                 </div>
               </div>
             </Link>
@@ -444,7 +445,7 @@ export function Dashboard({ session }: { session: any }) {
               className="group relative inline-flex items-center gap-4 px-6 sm:px-8 py-4 bg-white rounded-full shadow-[0_2px_10px_-2px_rgba(0,0,0,0.04)] hover:shadow-[0_10px_40px_-10px_rgba(0,0,0,0.08)] border border-text-200/50 hover:border-text-300 transition-all duration-300 hover:-translate-y-0.5 w-full sm:w-auto"
             >
               <div className="w-10 h-10 rounded-full bg-secondary-200 flex items-center justify-center text-text-500 group-hover:bg-accent-50 group-hover:text-accent-600 transition-colors duration-300">
-                <History className="w-5 h-5" />
+                <RiHistoryLine className="w-5 h-5" />
               </div>
 
               <div className="flex flex-col text-left">
@@ -458,7 +459,7 @@ export function Dashboard({ session }: { session: any }) {
 
               <div className="pl-2">
                 <div className="w-8 h-8 rounded-full border border-text-200 flex items-center justify-center group-hover:border-accent-300 group-hover:bg-accent-50 transition-all">
-                  <ArrowRight className="w-4 h-4 text-text-400 group-hover:text-accent-600 group-hover:-rotate-45 transition-all duration-300" />
+                  <RiArrowRightLine className="w-4 h-4 text-text-400 group-hover:text-accent-600 group-hover:-rotate-45 transition-all duration-300" />
                 </div>
               </div>
             </Link>
@@ -509,7 +510,7 @@ export function Dashboard({ session }: { session: any }) {
 
                     <div className="flex items-center gap-1.5 pl-2 text-accent-600 font-bold text-[10px] uppercase tracking-wider group-hover:underline decoration-2 underline-offset-4 decoration-accent-200 shrink-0">
                       <span>Open</span>
-                      <ArrowUpRight className="w-3.5 h-3.5" />
+                      <RiArrowRightUpLine className="w-3.5 h-3.5" />
                     </div>
                   </>
                 );

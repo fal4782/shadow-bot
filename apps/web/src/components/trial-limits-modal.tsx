@@ -1,7 +1,14 @@
 "use client";
 
 import { motion, AnimatePresence } from "framer-motion";
-import { Clock, Database, HardDrive, ShieldAlert, X, Zap } from "lucide-react";
+import {
+  RiTimeLine,
+  RiDatabase2Line,
+  RiHardDriveLine,
+  RiShieldCheckLine,
+  RiCloseLine,
+  RiFlashlightLine,
+} from "react-icons/ri";
 
 interface TrialLimitsModalProps {
   isOpen: boolean;
@@ -37,14 +44,14 @@ export function TrialLimitsModal({ isOpen, onClose }: TrialLimitsModalProps) {
               onClick={onClose}
               className="absolute top-4 right-4 p-2 text-text-400 hover:text-text-700 hover:bg-secondary-200 rounded-full transition-colors z-20"
             >
-              <X className="w-5 h-5" />
+              <RiCloseLine className="w-5 h-5" />
             </button>
 
             <div className="relative p-6 sm:p-8 pt-10">
               {/* Header */}
               <div className="text-center mb-8">
                 <div className="w-14 h-14 mx-auto bg-accent-50 text-accent-600 rounded-2xl flex items-center justify-center mb-4 shadow-sm border border-accent-200/30 ring-4 ring-white">
-                  <ShieldAlert className="w-7 h-7" />
+                  <RiShieldCheckLine className="w-7 h-7" />
                 </div>
                 <h2
                   className="text-2xl text-text-900 tracking-tight mb-2"
@@ -63,7 +70,7 @@ export function TrialLimitsModal({ isOpen, onClose }: TrialLimitsModalProps) {
                 {/* 15 Mins */}
                 <div className="flex items-start gap-4 p-4 rounded-2xl bg-secondary-200 border border-text-200/40 hover:border-accent-200/50 transition-colors group">
                   <div className="mt-0.5 w-8 h-8 rounded-lg bg-white border border-text-200/40 text-orange-500 flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform">
-                    <Clock className="w-4 h-4" />
+                    <RiTimeLine className="w-4 h-4" />
                   </div>
                   <div>
                     <h3 className="font-semibold text-text-900 text-sm tracking-tight">
@@ -78,7 +85,7 @@ export function TrialLimitsModal({ isOpen, onClose }: TrialLimitsModalProps) {
                 {/* 1 Concurrent */}
                 <div className="flex items-start gap-4 p-4 rounded-2xl bg-secondary-200 border border-text-200/40 hover:border-accent-200/50 transition-colors group">
                   <div className="mt-0.5 w-8 h-8 rounded-lg bg-white border border-text-200/40 text-blue-500 flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform">
-                    <Zap className="w-4 h-4" />
+                    <RiFlashlightLine className="w-4 h-4" />
                   </div>
                   <div>
                     <h3 className="font-semibold text-text-900 text-sm tracking-tight">
@@ -93,7 +100,7 @@ export function TrialLimitsModal({ isOpen, onClose }: TrialLimitsModalProps) {
                 {/* 24h Retention */}
                 <div className="flex items-start gap-4 p-4 rounded-2xl bg-secondary-200 border border-text-200/40 hover:border-accent-200/50 transition-colors group">
                   <div className="mt-0.5 w-8 h-8 rounded-lg bg-white border border-text-200/40 text-rose-500 flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform">
-                    <HardDrive className="w-4 h-4" />
+                    <RiHardDriveLine className="w-4 h-4" />
                   </div>
                   <div>
                     <h3 className="font-semibold text-text-900 text-sm tracking-tight">
@@ -109,7 +116,7 @@ export function TrialLimitsModal({ isOpen, onClose }: TrialLimitsModalProps) {
                 {/* Total Limit */}
                 <div className="flex items-start gap-4 p-4 rounded-2xl bg-secondary-200 border border-text-200/40 hover:border-accent-200/50 transition-colors group">
                   <div className="mt-0.5 w-8 h-8 rounded-lg bg-white border border-text-200/40 text-violet-500 flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform">
-                    <Database className="w-4 h-4" />
+                    <RiDatabase2Line className="w-4 h-4" />
                   </div>
                   <div>
                     <h3 className="font-semibold text-text-900 text-sm tracking-tight">

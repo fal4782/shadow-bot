@@ -4,14 +4,14 @@ import { useActionState, useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import {
-  Mail,
-  Lock,
-  User,
-  Loader2,
-  ArrowRight,
-  CheckCircle2,
-  AlertCircle,
-} from "lucide-react";
+  RiMailLine,
+  RiLockLine,
+  RiUserLine,
+  RiLoader4Line,
+  RiArrowRightLine,
+  RiCheckboxCircleLine,
+  RiErrorWarningLine,
+} from "react-icons/ri";
 import { loginAction, signupAction } from "@/lib/actions/auth";
 import { signIn } from "next-auth/react";
 
@@ -106,7 +106,7 @@ export function AuthForm({ mode: initialMode }: AuthFormProps) {
             transition={{ type: "spring", stiffness: 200, damping: 20 }}
             className="flex items-start gap-3 p-4 bg-red-50/80 backdrop-blur-md border border-red-200/50 rounded-xl shadow-sm"
           >
-            <AlertCircle className="w-5 h-5 text-red-400 shrink-0 mt-0.5" />
+            <RiErrorWarningLine className="w-5 h-5 text-red-400 shrink-0 mt-0.5" />
             <p className="text-sm font-medium text-red-600">{authError}</p>
           </motion.div>
         )}
@@ -120,7 +120,7 @@ export function AuthForm({ mode: initialMode }: AuthFormProps) {
             transition={{ type: "spring", stiffness: 200, damping: 20 }}
             className="flex items-start gap-3 p-4 bg-green-50/80 backdrop-blur-md border border-green-200/50 rounded-xl shadow-sm"
           >
-            <CheckCircle2 className="w-5 h-5 text-green-500 shrink-0 mt-0.5" />
+            <RiCheckboxCircleLine className="w-5 h-5 text-green-500 shrink-0 mt-0.5" />
             <p className="text-sm font-medium text-green-700">
               Account created! Sign in below.
             </p>
@@ -145,7 +145,7 @@ export function AuthForm({ mode: initialMode }: AuthFormProps) {
                     Full Name
                   </label>
                   <div className="relative group">
-                    <User className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-text-400 group-focus-within:text-text-700 transition-colors" />
+                    <RiUserLine className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-text-400 group-focus-within:text-text-700 transition-colors" />
                     <input
                       name="name"
                       type="text"
@@ -169,7 +169,7 @@ export function AuthForm({ mode: initialMode }: AuthFormProps) {
               Email Address
             </label>
             <div className="relative group">
-              <Mail className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-text-400 group-focus-within:text-text-700 transition-colors" />
+              <RiMailLine className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-text-400 group-focus-within:text-text-700 transition-colors" />
               <input
                 name="email"
                 type="email"
@@ -195,7 +195,7 @@ export function AuthForm({ mode: initialMode }: AuthFormProps) {
               Password
             </label>
             <div className="relative group">
-              <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-text-400 group-focus-within:text-text-700 transition-colors" />
+              <RiLockLine className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-text-400 group-focus-within:text-text-700 transition-colors" />
               <input
                 name="password"
                 type="password"
@@ -235,7 +235,7 @@ export function AuthForm({ mode: initialMode }: AuthFormProps) {
                 exit={{ opacity: 0 }}
                 className="flex items-center gap-2"
               >
-                <Loader2 className="w-4 h-4 animate-spin" />
+                <RiLoader4Line className="w-4 h-4 animate-spin" />
                 {isAuthenticating ? "Signing in..." : "Processing..."}
               </motion.span>
             ) : (
@@ -247,7 +247,7 @@ export function AuthForm({ mode: initialMode }: AuthFormProps) {
                 className="flex items-center gap-2"
               >
                 {mode === "signup" ? "Create Account" : "Sign In"}
-                <ArrowRight className="w-4 h-4" />
+                <RiArrowRightLine className="w-4 h-4" />
               </motion.span>
             )}
           </AnimatePresence>

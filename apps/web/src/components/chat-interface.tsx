@@ -3,14 +3,16 @@
 import { useEffect, useState, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
-  X,
-  MessageSquare,
-  Send,
-  Loader2,
-  Bot,
-  User,
-  AlertCircle,
-} from "lucide-react";
+  RiCloseLine,
+  RiChat3Line,
+  RiSendPlaneFill,
+  RiLoader4Line,
+  RiRobot2Line,
+  RiUserLine,
+  RiErrorWarningLine,
+  RiChatSmile2Line,
+  RiGhostSmileLine,
+} from "react-icons/ri";
 import ReactMarkdown from "react-markdown";
 import { chatApi, ChatMessage } from "@/lib/api/chat";
 
@@ -141,7 +143,7 @@ export function ChatInterface({
             <div className="flex items-center justify-between px-6 py-4 border-b border-text-200/40 bg-secondary-100/50 shrink-0">
               <div className="flex items-center gap-4">
                 <div className="w-10 h-10 rounded-xl bg-accent-50 flex items-center justify-center text-accent-600 border border-accent-200/30">
-                  <Bot className="w-6 h-6" />
+                  <RiChatSmile2Line className="w-6 h-6" />
                 </div>
                 <div>
                   <h2 className="text-lg font-bold text-text-900 tracking-tight">
@@ -157,7 +159,7 @@ export function ChatInterface({
                 onClick={onClose}
                 className="w-9 h-9 rounded-xl bg-secondary-200 border border-text-200/40 flex items-center justify-center text-text-400 hover:text-text-700 hover:bg-secondary-300 transition-all"
               >
-                <X className="w-4 h-4" />
+                <RiCloseLine className="w-4 h-4" />
               </button>
             </div>
 
@@ -165,14 +167,14 @@ export function ChatInterface({
             <div className="flex-1 overflow-y-auto p-6 space-y-6 bg-secondary-100/30 scroll-smooth">
               {loading ? (
                 <div className="flex flex-col items-center justify-center h-full">
-                  <Loader2 className="w-8 h-8 text-accent-500 animate-spin mb-2" />
+                  <RiLoader4Line className="w-8 h-8 text-accent-500 animate-spin mb-2" />
                   <p className="text-text-400 text-sm font-medium">
                     Loading conversation...
                   </p>
                 </div>
               ) : messages.length === 0 ? (
                 <div className="flex flex-col items-center justify-center h-full text-center p-8 opacity-60">
-                  <MessageSquare className="w-12 h-12 text-text-300 mb-4" />
+                  <RiChat3Line className="w-12 h-12 text-text-300 mb-4" />
                   <p className="text-text-500 font-medium">
                     No messages yet. Start the conversation!
                   </p>
@@ -189,13 +191,13 @@ export function ChatInterface({
                   >
                     {/* Avatar */}
                     <div className="shrink-0 mt-1">
-                      {msg.role === "user" ? (
+                      {msg.role === "user" ? (  
                         <div className="w-8 h-8 rounded-full bg-secondary-200 flex items-center justify-center text-text-600 border border-text-200/50">
-                          <User className="w-4 h-4" />
+                          <RiUserLine className="w-4 h-4" />
                         </div>
                       ) : (
-                        <div className="w-8 h-8 rounded-full bg-accent-50 flex items-center justify-center text-accent-600 border border-accent-200/30">
-                          <Bot className="w-4 h-4" />
+                        <div className="w-8 h-8 rounded-full bg-secondary-200 flex items-center justify-center text-text-600 border border-text-200/50">
+                          <RiGhostSmileLine className="w-4 h-4" />
                         </div>
                       )}
                     </div>
@@ -228,7 +230,7 @@ export function ChatInterface({
                 >
                   <div className="shrink-0 mt-1">
                     <div className="w-8 h-8 rounded-full bg-accent-50 flex items-center justify-center text-accent-600 border border-accent-200/30">
-                      <Bot className="w-4 h-4" />
+                      <RiRobot2Line className="w-4 h-4" />
                     </div>
                   </div>
                   <div className="bg-white border border-text-200/50 rounded-2xl rounded-tl-none px-5 py-4 shadow-sm flex items-center gap-2">
@@ -244,7 +246,7 @@ export function ChatInterface({
             {/* Error Message */}
             {error && (
               <div className="px-6 py-3 bg-red-50/80 backdrop-blur-md border-t border-red-200/50 flex items-center gap-2 text-red-500 text-xs font-medium">
-                <AlertCircle className="w-3.5 h-3.5 text-red-400" />
+                <RiErrorWarningLine className="w-3.5 h-3.5 text-red-400" />
                 {error}
               </div>
             )}
@@ -269,9 +271,9 @@ export function ChatInterface({
                   className="absolute right-2 p-2.5 bg-text-900 text-white rounded-xl hover:bg-text-800 disabled:opacity-50 disabled:hover:bg-text-900 transition-all active:scale-95 shadow-md shadow-text-900/10"
                 >
                   {sending ? (
-                    <Loader2 className="w-4 h-4 animate-spin" />
+                    <RiLoader4Line className="w-4 h-4 animate-spin" />
                   ) : (
-                    <Send className="w-4 h-4" />
+                    <RiSendPlaneFill className="w-4 h-4" />
                   )}
                 </button>
               </div>
