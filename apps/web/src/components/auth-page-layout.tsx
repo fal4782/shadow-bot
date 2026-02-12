@@ -1,6 +1,6 @@
 "use client";
 
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import { useEffect, useRef } from "react";
 
 import Link from "next/link";
@@ -160,6 +160,7 @@ export function AuthPageLayout({
       </div>
 
       <motion.div
+        layout
         initial={{ opacity: 0, y: 30, scale: 0.95 }}
         animate={{ opacity: 1, y: 0, scale: 1 }}
         transition={{
@@ -185,14 +186,25 @@ export function AuthPageLayout({
               Bot
             </span>
           </Link> */}
-          <div className="space-y-2">
-            <h1
-              className="text-3xl text-text-900 tracking-tight"
-              style={{ fontFamily: "var(--font-dm-serif), Georgia, serif" }}
-            >
-              {title}
-            </h1>
-            <p className="text-sm text-text-500 font-normal">{subtitle}</p>
+          <div className="space-y-2 min-h-22 flex flex-col justify-center">
+            <AnimatePresence mode="wait">
+              <motion.div
+                key={title}
+                initial={{ opacity: 0, scale: 0.98 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0, scale: 0.98 }}
+                transition={{ duration: 0.35, ease: [0.22, 1, 0.36, 1] }}
+                className="space-y-2"
+              >
+                <h1
+                  className="text-3xl text-text-900 tracking-tight"
+                  style={{ fontFamily: "var(--font-dm-serif), Georgia, serif" }}
+                >
+                  {title}
+                </h1>
+                <p className="text-sm text-text-500 font-normal">{subtitle}</p>
+              </motion.div>
+            </AnimatePresence>
           </div>
         </div>
 
