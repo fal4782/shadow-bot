@@ -13,7 +13,7 @@ import {
   Menu,
   ChevronRight,
 } from "lucide-react";
-import { RiGhostSmileLine } from "react-icons/ri";
+
 import Link from "next/link";
 import { queryApi, QueryMessage, QuerySessionListItem } from "@/lib/api/query";
 import ReactMarkdown from "react-markdown";
@@ -33,12 +33,10 @@ export function GlobalChat({ session }: { session: any }) {
 
   const hasStarted = messages.length > 0 || isLoading;
 
-  // Auto-scroll to bottom when messages change
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages, isLoading]);
 
-  // Auto-focus input on mount and when starting chat
   useEffect(() => {
     const isMobile = typeof window !== "undefined" && window.innerWidth < 768;
     if (!isSidebarOpen || !isMobile) {
@@ -46,7 +44,6 @@ export function GlobalChat({ session }: { session: any }) {
     }
   }, [hasStarted, isSidebarOpen]);
 
-  // Fetch session list on mount
   useEffect(() => {
     if (session?.accessToken) {
       fetchSessions();
@@ -103,7 +100,6 @@ export function GlobalChat({ session }: { session: any }) {
     setInput("");
     setError(null);
 
-    // Optimistically add user message
     const tempUserMessage: QueryMessage = {
       id: `temp-${Date.now()}`,
       role: "user",
@@ -120,13 +116,11 @@ export function GlobalChat({ session }: { session: any }) {
         session?.accessToken || "",
       );
 
-      // Update session ID if this was the first message
       if (!querySessionId && response.querySessionId) {
         setQuerySessionId(response.querySessionId);
-        fetchSessions(); // Refresh list to show new session
+        fetchSessions();
       }
 
-      // Add AI response
       const aiMessage: QueryMessage = {
         id: response.assistantMessageId,
         role: "assistant",
@@ -135,7 +129,6 @@ export function GlobalChat({ session }: { session: any }) {
       };
 
       setMessages((prev) => {
-        // Replace temp message with real one
         const withoutTemp = prev.filter((m) => m.id !== tempUserMessage.id);
         return [
           ...withoutTemp,
@@ -145,7 +138,6 @@ export function GlobalChat({ session }: { session: any }) {
       });
     } catch (err: any) {
       setError(err.response?.data?.error || "Failed to send message");
-      // Remove temp message on error
       setMessages((prev) => prev.filter((m) => m.id !== tempUserMessage.id));
     } finally {
       setIsLoading(false);
@@ -153,14 +145,14 @@ export function GlobalChat({ session }: { session: any }) {
   };
 
   return (
-    <div className="flex h-screen bg-linear-to-br from-cream-50 via-white to-terra-50/30 overflow-hidden relative">
-      {/* Dynamic Background Elements */}
+    <div className="flex h-screen bg-secondary-100 overflow-hidden relative">
+      {/* Background */}
       <div className="absolute inset-0 pointer-events-none z-0">
-        <div className="absolute top-0 left-1/4 w-96 h-96 bg-primary-200/10 rounded-full blur-[120px]" />
-        <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-violet-200/10 rounded-full blur-[120px]" />
+        <div className="absolute top-0 left-1/4 w-96 h-96 bg-accent-200/5 rounded-full blur-[120px]" />
+        <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-violet-200/5 rounded-full blur-[120px]" />
       </div>
 
-      {/* Sidebar - Restored original structure */}
+      {/* Sidebar */}
       <AnimatePresence mode="wait">
         {isSidebarOpen && (
           <motion.div
@@ -168,26 +160,29 @@ export function GlobalChat({ session }: { session: any }) {
             animate={{ x: 0, opacity: 1 }}
             exit={{ x: -280, opacity: 0 }}
             transition={{ type: "spring", bounce: 0, duration: 0.4 }}
-            className="fixed md:relative z-40 w-[280px] h-full bg-white/60 backdrop-blur-2xl border-r border-text-900/5 flex flex-col"
+            className="fixed md:relative z-40 w-[280px] h-full bg-white/70 backdrop-blur-2xl border-r border-text-200/40 flex flex-col"
           >
-            {/* Sidebar Branding - Restored */}
+            {/* Sidebar Brand */}
             <Link
               href="/"
-              className="p-8 pb-4 flex items-center gap-3 hover:opacity-80 transition-opacity"
+              className="p-6 pb-3 flex items-center gap-1.5 hover:opacity-70 transition-opacity"
             >
-              <div className="w-8 h-8 rounded-lg bg-primary-600 text-white flex items-center justify-center shadow-lg shadow-primary-600/20">
-                <RiGhostSmileLine className="w-5 h-5" />
-              </div>
-              <span className="font-black text-xl tracking-tighter text-text-900">
-                Shadow Bot
+              <span
+                className="text-xl tracking-tight text-text-900"
+                style={{ fontFamily: "var(--font-dm-serif), Georgia, serif" }}
+              >
+                Shadow
+              </span>
+              <span className="text-xl font-semibold tracking-tight text-text-500">
+                Bot
               </span>
             </Link>
 
             {/* New Chat Button */}
-            <div className="px-4 py-4">
+            <div className="px-4 py-3">
               <button
                 onClick={startNewChat}
-                className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-white border border-primary-200 text-primary-700 rounded-2xl font-bold hover:bg-primary-50 transition-all active:scale-95 shadow-sm group"
+                className="w-full flex items-center justify-center gap-2 px-4 py-2.5 bg-white border border-text-200/60 text-text-700 rounded-full font-semibold text-sm hover:border-text-300 hover:shadow-sm transition-all active:scale-95 group"
               >
                 <Plus className="w-4 h-4 group-hover:rotate-90 transition-transform" />
                 New Chat
@@ -196,12 +191,12 @@ export function GlobalChat({ session }: { session: any }) {
 
             {/* Sessions List */}
             <div className="flex-1 overflow-y-auto px-3 space-y-1 custom-scrollbar">
-              <p className="px-4 py-2 text-[10px] font-black uppercase tracking-[0.2em] text-text-400">
+              <p className="px-3 py-2 text-[10px] font-semibold uppercase tracking-[0.2em] text-text-400">
                 Recent Chats
               </p>
               {sessions.length === 0 ? (
                 <div className="px-4 py-8 text-center space-y-2">
-                  <div className="w-10 h-10 rounded-full bg-text-50 flex items-center justify-center mx-auto">
+                  <div className="w-10 h-10 rounded-full bg-secondary-200 flex items-center justify-center mx-auto">
                     <Clock className="w-5 h-5 text-text-300" />
                   </div>
                   <p className="text-xs font-medium text-text-400">
@@ -215,30 +210,30 @@ export function GlobalChat({ session }: { session: any }) {
                     onClick={() => loadSession(s.id)}
                     className={`w-full text-left p-3 rounded-xl transition-all group relative ${
                       querySessionId === s.id
-                        ? "bg-primary-50 text-primary-900 shadow-sm"
-                        : "hover:bg-text-50 text-text-600 hover:text-text-900"
+                        ? "bg-accent-50 text-text-900"
+                        : "hover:bg-secondary-200 text-text-600 hover:text-text-900"
                     }`}
                   >
                     <div className="flex items-start gap-3">
                       <MessageSquare
-                        className={`w-4 h-4 mt-1 shrink-0 ${querySessionId === s.id ? "text-primary-600" : "text-text-300"}`}
+                        className={`w-4 h-4 mt-1 shrink-0 ${querySessionId === s.id ? "text-accent-600" : "text-text-300"}`}
                       />
                       <div className="flex-1 min-w-0">
-                        <p className="text-sm font-bold truncate leading-tight mb-0.5">
+                        <p className="text-sm font-semibold truncate leading-tight mb-0.5">
                           {s.title || "Untitled Chat"}
                         </p>
-                        <p className="text-[11px] font-medium opacity-60 truncate">
+                        <p className="text-[11px] font-normal opacity-50 truncate">
                           {s.lastMessage || "No messages"}
                         </p>
                       </div>
                       <ChevronRight
-                        className={`w-3 h-3 mt-1 opacity-0 group-hover:opacity-100 transition-opacity ${querySessionId === s.id ? "text-primary-400" : "text-text-300"}`}
+                        className={`w-3 h-3 mt-1 opacity-0 group-hover:opacity-100 transition-opacity ${querySessionId === s.id ? "text-accent-500" : "text-text-300"}`}
                       />
                     </div>
                     {querySessionId === s.id && (
                       <motion.div
                         layoutId="active-pill"
-                        className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-6 bg-primary-600 rounded-r-full"
+                        className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-6 bg-accent-600 rounded-r-full"
                       />
                     )}
                   </button>
@@ -246,17 +241,17 @@ export function GlobalChat({ session }: { session: any }) {
               )}
             </div>
 
-            {/* Sidebar Bottom - Restored Profile */}
-            <div className="p-4 border-t border-text-900/5">
+            {/* Sidebar Bottom */}
+            <div className="p-4 border-t border-text-200/40">
               <UserProfileBadge user={session?.user} />
             </div>
           </motion.div>
         )}
       </AnimatePresence>
 
-      {/* Main Content Area */}
+      {/* Main Content */}
       <div className="flex-1 flex flex-col relative z-20 min-w-0 h-full">
-        {/* Header Toggle - Visible only when sidebar closed or mobile */}
+        {/* Header */}
         <AnimatePresence>
           {(!isSidebarOpen ||
             (typeof window !== "undefined" && window.innerWidth < 768)) && (
@@ -270,17 +265,17 @@ export function GlobalChat({ session }: { session: any }) {
                 {!isSidebarOpen && (
                   <button
                     onClick={() => setIsSidebarOpen(true)}
-                    className="p-2 bg-white/80 backdrop-blur-md rounded-xl border border-text-900/5 shadow-sm text-text-600 hover:text-text-900 transition-colors"
+                    className="p-2 bg-white/80 backdrop-blur-md rounded-xl border border-text-200/50 shadow-sm text-text-500 hover:text-text-900 transition-colors"
                   >
                     <Menu className="w-5 h-5" />
                   </button>
                 )}
                 {hasStarted && (
-                  <div className="flex items-center gap-3 ml-2">
-                    <div className="p-1.5 bg-primary-100 rounded-lg">
-                      <Sparkles className="w-4 h-4 text-primary-600" />
+                  <div className="flex items-center gap-2 ml-2">
+                    <div className="p-1.5 bg-accent-50 rounded-lg">
+                      <Sparkles className="w-4 h-4 text-accent-600" />
                     </div>
-                    <h2 className="text-lg font-bold text-text-900 truncate max-w-[150px] md:max-w-md">
+                    <h2 className="text-lg font-semibold text-text-900 truncate max-w-[150px] md:max-w-md">
                       {sessions.find((s) => s.id === querySessionId)?.title ||
                         "Active Chat"}
                     </h2>
@@ -296,11 +291,10 @@ export function GlobalChat({ session }: { session: any }) {
           )}
         </AnimatePresence>
 
-        {/* Dynamic Content Container */}
+        {/* Dynamic Content */}
         <main className="flex-1 relative flex flex-col min-h-0">
           <AnimatePresence mode="popLayout" initial={false}>
             {!hasStarted ? (
-              /* Initial Centered View */
               <motion.div
                 key="greeting"
                 initial={{ opacity: 0, scale: 0.95 }}
@@ -311,15 +305,19 @@ export function GlobalChat({ session }: { session: any }) {
               >
                 <div className="max-w-2xl w-full text-center space-y-12">
                   <div className="space-y-4">
-                    <h1 className="text-5xl md:text-7xl font-black text-text-900 tracking-tight">
+                    <h1
+                      className="text-5xl md:text-7xl text-text-900 tracking-tight"
+                      style={{
+                        fontFamily: "var(--font-dm-serif), Georgia, serif",
+                      }}
+                    >
                       Hey, {session?.user?.name?.split(" ")[0] || "there"}
                     </h1>
-                    <p className="text-xl md:text-2xl text-text-500 font-medium">
+                    <p className="text-xl md:text-2xl text-text-500 font-normal">
                       What would you like to know about your meetings?
                     </p>
                   </div>
-                  <div className="w-full max-w-xl mx-auto h-[72px]" />{" "}
-                  {/* Space for morphing input */}
+                  <div className="w-full max-w-xl mx-auto h-[72px]" />
                   <div className="flex flex-wrap gap-2 justify-center">
                     {[
                       "Summarize my action items",
@@ -329,7 +327,7 @@ export function GlobalChat({ session }: { session: any }) {
                       <button
                         key={i}
                         onClick={() => setInput(example)}
-                        className="px-4 py-2 bg-white/60 backdrop-blur-md hover:bg-white/80 rounded-full border border-primary-100 text-sm text-text-700 transition-all hover:scale-105"
+                        className="px-4 py-2 bg-white/80 backdrop-blur-md hover:bg-white rounded-full border border-text-200/60 text-sm text-text-600 font-medium transition-all hover:scale-105 hover:border-text-300 hover:shadow-sm"
                       >
                         {example}
                       </button>
@@ -338,7 +336,6 @@ export function GlobalChat({ session }: { session: any }) {
                 </div>
               </motion.div>
             ) : (
-              /* Active Chat View */
               <motion.div
                 key="history"
                 initial={{ opacity: 0 }}
@@ -346,12 +343,11 @@ export function GlobalChat({ session }: { session: any }) {
                 exit={{ opacity: 0 }}
                 className="absolute inset-0 flex flex-col"
               >
-                {/* Header padding for chat view when sidebar closed */}
                 {!isSidebarOpen && <div className="h-28 shrink-0" />}
 
-                <div className="flex-1 overflow-y-auto px-6 md:px-12 py-8 space-y-8 scroll-smooth custom-scrollbar">
-                  <div className="max-w-4xl mx-auto w-full space-y-8">
-                    {messages.map((msg, idx) => (
+                <div className="flex-1 overflow-y-auto px-6 md:px-12 py-8 space-y-6 scroll-smooth custom-scrollbar">
+                  <div className="max-w-4xl mx-auto w-full space-y-6">
+                    {messages.map((msg) => (
                       <motion.div
                         key={msg.id}
                         layout
@@ -361,10 +357,10 @@ export function GlobalChat({ session }: { session: any }) {
                         className={`flex ${msg.role === "user" ? "justify-end" : "justify-start"}`}
                       >
                         <div
-                          className={`max-w-[85%] sm:max-w-[75%] rounded-3xl px-6 py-4 shadow-sm ${
+                          className={`max-w-[85%] sm:max-w-[75%] rounded-3xl px-6 py-4 ${
                             msg.role === "user"
-                              ? "bg-primary-600 text-white font-medium"
-                              : "bg-white border border-text-100 text-text-800"
+                              ? "bg-text-900 text-white font-medium shadow-md"
+                              : "bg-white border border-text-200/50 text-text-800 shadow-sm"
                           }`}
                         >
                           {msg.role === "assistant" ? (
@@ -386,9 +382,9 @@ export function GlobalChat({ session }: { session: any }) {
                         animate={{ opacity: 1 }}
                         className="flex justify-start"
                       >
-                        <div className="bg-white border border-text-100 rounded-3xl px-6 py-4 flex items-center gap-3 shadow-sm">
-                          <Loader2 className="w-4 h-4 animate-spin text-primary-600" />
-                          <span className="text-sm font-bold text-text-600 tracking-tight">
+                        <div className="bg-white border border-text-200/50 rounded-3xl px-6 py-4 flex items-center gap-3 shadow-sm">
+                          <Loader2 className="w-4 h-4 animate-spin text-accent-600" />
+                          <span className="text-sm font-medium text-text-500 tracking-tight">
                             Thinking...
                           </span>
                         </div>
@@ -397,14 +393,13 @@ export function GlobalChat({ session }: { session: any }) {
                     <div ref={messagesEndRef} className="h-4" />
                   </div>
                 </div>
-                {/* Bottom padding for messages so they don't get hidden behind input */}
                 <div className="h-32 shrink-0" />
               </motion.div>
             )}
           </AnimatePresence>
         </main>
 
-        {/* Morphing Input Section */}
+        {/* Input Section */}
         <div
           className={`absolute left-0 right-0 z-50 pointer-events-none px-6 md:px-12 transition-all duration-700 ease-[cubic-bezier(0.16,1,0.3,1)] ${
             !hasStarted
@@ -424,19 +419,19 @@ export function GlobalChat({ session }: { session: any }) {
                     layoutId="input-spotlight"
                     initial={{ opacity: 0, scale: 0.9 }}
                     animate={{
-                      opacity: 0.4,
-                      scale: [1, 1.05, 1],
+                      opacity: 0.3,
+                      scale: [1, 1.03, 1],
                     }}
                     exit={{ opacity: 0, scale: 0.9 }}
                     transition={{
-                      opacity: { duration: 0.5 },
+                      opacity: { duration: 0.4 },
                       scale: {
                         duration: 4,
                         repeat: Infinity,
                         ease: "easeInOut",
                       },
                     }}
-                    className="absolute -inset-10 rounded-[3rem] bg-linear-to-r from-primary-500/15 via-orange-500/15 to-violet-500/15 blur-[60px] pointer-events-none"
+                    className="absolute -inset-8 rounded-[3rem] bg-linear-gradient-to-r from-accent-300/15 via-blue-300/10 to-violet-300/15 blur-[50px] pointer-events-none"
                   />
                 )}
               </AnimatePresence>
@@ -444,10 +439,10 @@ export function GlobalChat({ session }: { session: any }) {
               <motion.form
                 layout
                 onSubmit={handleSend}
-                className={`relative bg-white/90 backdrop-blur-xl rounded-full flex items-center px-6 py-4 border transition-all duration-300 ${
+                className={`relative bg-white/90 backdrop-blur-xl rounded-full flex items-center px-6 py-3.5 border transition-all duration-300 ${
                   isFocused
-                    ? "border-primary-400/40 ring-4 ring-primary-500/5 shadow-2xl shadow-primary-500/10"
-                    : "border-text-900/10 shadow-lg shadow-text-900/5"
+                    ? "border-accent-400/30 ring-4 ring-accent-500/5 shadow-xl"
+                    : "border-text-200/60 shadow-lg shadow-text-900/4"
                 }`}
               >
                 <input
@@ -468,9 +463,9 @@ export function GlobalChat({ session }: { session: any }) {
                 <button
                   type="submit"
                   disabled={!input.trim() || isLoading}
-                  className="ml-4 w-12 h-12 rounded-full bg-primary-600 hover:bg-primary-700 disabled:bg-text-200 disabled:cursor-not-allowed flex items-center justify-center transition-all active:scale-95 shadow-lg shadow-primary-600/20"
+                  className="ml-4 w-11 h-11 rounded-full bg-text-900 hover:bg-text-800 disabled:bg-text-200 disabled:cursor-not-allowed flex items-center justify-center transition-all active:scale-95 shadow-md shadow-text-900/10"
                 >
-                  <Send className="w-5 h-5 text-white" />
+                  <Send className="w-4.5 h-4.5 text-white" />
                 </button>
               </motion.form>
 
@@ -480,7 +475,7 @@ export function GlobalChat({ session }: { session: any }) {
                     initial={{ opacity: 0, y: 10 }}
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0, y: 10 }}
-                    className="absolute top-full left-0 right-0 mt-4 text-xs font-bold text-red-600 text-center bg-red-50 py-2 rounded-full border border-red-100"
+                    className="absolute top-full left-0 right-0 mt-4 text-xs font-medium text-red-500 text-center bg-red-50/80 py-2 rounded-full border border-red-200/50"
                   >
                     {error}
                   </motion.p>

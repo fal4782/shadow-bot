@@ -1,258 +1,414 @@
 "use client";
 
-import { motion, useScroll, useTransform, useSpring } from "framer-motion";
-import { Video, FileText, Sparkles, ArrowRight } from "lucide-react";
-import { RiGhostSmileLine, RiGithubFill, RiSearchLine } from "react-icons/ri";
+import {
+  motion,
+  useScroll,
+  useTransform,
+  useSpring,
+  useMotionValueEvent,
+} from "framer-motion";
+import { Video, FileText, Sparkles, ArrowRight, Play, Mic } from "lucide-react";
+import { RiGithubFill, RiSearchLine } from "react-icons/ri";
 
 import Link from "next/link";
-import { useRef } from "react";
+import { useRef, useState } from "react";
 import { GoHeartFill } from "react-icons/go";
 
 export function LandingPage() {
   const containerRef = useRef<HTMLDivElement>(null);
+  const [navScrolled, setNavScrolled] = useState(false);
+
   const { scrollYProgress } = useScroll({
     target: containerRef,
     offset: ["start start", "end end"],
   });
 
-  // Smooth spring physics
-  const smoothProgress = useSpring(scrollYProgress, {
-    stiffness: 100,
-    damping: 30,
-    restDelta: 0.001,
+  const springConfig = { stiffness: 50, damping: 20, mass: 0.5 };
+  const heroY = useSpring(
+    useTransform(scrollYProgress, [0, 0.3], [0, -120]),
+    springConfig,
+  );
+  const heroOpacity = useSpring(
+    useTransform(scrollYProgress, [0, 0.25], [1, 0]),
+    springConfig,
+  );
+  const heroScale = useSpring(
+    useTransform(scrollYProgress, [0, 0.25], [1, 0.95]),
+    springConfig,
+  );
+
+  // Track scroll to add background to navbar
+  useMotionValueEvent(scrollYProgress, "change", (latest) => {
+    setNavScrolled(latest > 0.02);
   });
 
-  // Parallax transforms
-  const heroY = useTransform(smoothProgress, [0, 0.3], [0, -100]);
-  const heroOpacity = useTransform(smoothProgress, [0, 0.2], [1, 0]);
-  const heroScale = useTransform(smoothProgress, [0, 0.2], [1, 0.95]);
+  const features = [
+    {
+      icon: Video,
+      title: "Auto-Record Meetings",
+      description:
+        "Shadow Bot silently joins your meetings, captures every word and visual, so you never have to take notes again.",
+      accent: "from-blue-500/10 to-violet-500/10",
+    },
+    {
+      icon: FileText,
+      title: "Instant Transcriptions",
+      description:
+        "Get accurate, time-stamped transcripts seconds after your meeting ends. Search, copy, and share with ease.",
+      accent: "from-emerald-500/10 to-teal-500/10",
+    },
+    {
+      icon: Sparkles,
+      title: "AI-Powered Summaries",
+      description:
+        "Our AI distills key insights, action items, and decisions from hours of conversation into digestible briefs.",
+      accent: "from-amber-500/10 to-orange-500/10",
+    },
+    {
+      icon: RiSearchLine,
+      title: "Intelligent Search",
+      description:
+        "Ask natural language questions about any meeting. Get instant answers grounded in your actual conversation data.",
+      accent: "from-rose-500/10 to-pink-500/10",
+    },
+  ];
+
+  const stats = [
+    { value: "100%", label: "Open Source" },
+    { value: "<2s", label: "Transcript Speed" },
+    { value: "∞", label: "Meetings Recorded" },
+  ];
 
   return (
     <div
       ref={containerRef}
-      className="bg-secondary-50 text-text-900 font-sans selection:bg-primary-500/30 overflow-x-hidden"
+      className="bg-secondary-100 text-text-900 font-sans selection:bg-accent-500/20 overflow-x-hidden"
     >
-      {/* Subtle Grid Background */}
-      <div
-        className="fixed inset-0 pointer-events-none opacity-[0.02] -z-10"
-        style={{
-          backgroundImage:
-            "radial-gradient(var(--color-primary-700) 0.5px, transparent 0.5px)",
-          backgroundSize: "32px 32px",
-        }}
-      />
-
-      {/* Navigation */}
+      {/* ─── Premium Floating Navbar ─── */}
       <motion.nav
-        initial={{ y: -100 }}
-        animate={{ y: 0 }}
-        transition={{ type: "spring", stiffness: 100, damping: 20 }}
-        className="fixed top-0 w-full z-50 h-20 border-b border-text-900/10 bg-secondary-50/80 backdrop-blur-lg"
+        initial={{ y: -30, opacity: 0 }}
+        animate={{ y: 0, opacity: 1 }}
+        transition={{ delay: 0.05, duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
+        className="fixed top-0 left-0 right-0 z-50"
       >
-        <div className="max-w-7xl mx-auto px-6 h-full flex items-center justify-between">
-          <motion.div
-            initial={{ opacity: 0, x: -20 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ delay: 0.2 }}
-            className="flex items-center gap-3"
+        <div
+          className={`mx-auto max-w-6xl transition-all duration-500 ease-out ${
+            navScrolled ? "mt-4 mx-4 sm:mx-6 lg:mx-auto" : "mt-0 mx-0"
+          }`}
+        >
+          <div
+            className={`flex items-center justify-between transition-all duration-500 ease-out ${
+              navScrolled
+                ? "bg-white/75 backdrop-blur-2xl rounded-2xl shadow-[0_8px_32px_-8px_rgba(0,0,0,0.08)] px-6 py-3"
+                : "bg-transparent px-6 sm:px-12 lg:px-16 py-6"
+            }`}
           >
-            <div className="w-10 h-10 rounded-xl bg-linear-to-br from-primary-600 to-primary-700 flex items-center justify-center shadow-lg">
-              <RiGhostSmileLine className="text-white w-5 h-5" />
+            {/* Brand — Serif Wordmark */}
+            <Link href="/" className="flex items-center gap-1.5 group">
+              <span
+                className="text-[22px] tracking-tight text-text-900 group-hover:opacity-70 transition-opacity"
+                style={{ fontFamily: "var(--font-dm-serif), Georgia, serif" }}
+              >
+                Shadow
+              </span>
+              <span className="text-[22px] font-semibold tracking-tight text-text-400">
+                Bot
+              </span>
+            </Link>
+
+            {/* Center Nav Links */}
+            <div className="hidden md:flex items-center gap-1 absolute left-1/2 -translate-x-1/2">
+              <a
+                href="#features"
+                className="px-4 py-2 text-[13px] font-medium text-text-500 hover:text-text-900 rounded-full hover:bg-text-100/60 transition-all duration-200"
+              >
+                Features
+              </a>
+              <a
+                href="#how-it-works"
+                className="px-4 py-2 text-[13px] font-medium text-text-500 hover:text-text-900 rounded-full hover:bg-text-100/60 transition-all duration-200"
+              >
+                How it works
+              </a>
+              <a
+                href="https://github.com"
+                target="_blank"
+                rel="noreferrer"
+                className="px-4 py-2 text-[13px] font-medium text-text-500 hover:text-text-900 rounded-full hover:bg-text-100/60 transition-all duration-200 flex items-center gap-1.5"
+              >
+                <RiGithubFill className="w-3.5 h-3.5" />
+                GitHub
+              </a>
             </div>
-            <span className="text-lg font-extrabold tracking-tight text-text-900">
-              Shadow Bot
-            </span>
-          </motion.div>
-          <motion.div
-            initial={{ opacity: 0, x: 20 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ delay: 0.3 }}
-            className="flex items-center gap-6"
-          >
-            <Link
-              href="/login"
-              className="text-sm font-semibold text-text-600 hover:text-text-900 transition-colors"
-            >
-              Sign In
-            </Link>
-            <Link
-              href="/signup"
-              className="px-6 py-3 bg-linear-to-r from-primary-600 to-primary-700 text-white rounded-lg text-sm font-bold hover:opacity-90 transition-all shadow-lg"
-            >
-              Start Free
-            </Link>
-          </motion.div>
+
+            {/* Right Side Actions */}
+            <div className="flex items-center gap-3">
+              <Link
+                href="/login"
+                className="hidden sm:inline-flex text-[13px] font-medium text-text-600 hover:text-text-900 transition-colors px-4 py-2"
+              >
+                Sign in
+              </Link>
+              <Link
+                href="/login"
+                className="bg-text-900 text-white text-[13px] font-semibold px-5 py-2.5 rounded-full hover:bg-text-800 active:scale-[0.97] transition-all shadow-sm hover:shadow-md"
+              >
+                Get Started
+              </Link>
+            </div>
+          </div>
         </div>
       </motion.nav>
 
-      {/* Hero Section with Parallax */}
-      <section className="min-h-screen flex flex-col items-center justify-center px-6 pt-32 pb-20 relative">
+      {/* ─── Hero Section ─── */}
+      <section className="min-h-screen flex flex-col items-center justify-center px-6 pt-32 pb-24 relative">
+        {/* Ambient Gradient Glows */}
+        <div className="absolute inset-0 pointer-events-none overflow-hidden">
+          <motion.div
+            animate={{
+              scale: [1, 1.1, 1],
+              opacity: [0.25, 0.35, 0.25],
+            }}
+            transition={{ duration: 8, repeat: Infinity, ease: "easeInOut" }}
+            className="absolute top-[10%] left-1/2 -translate-x-1/2 w-[90%] max-w-4xl h-[55%] bg-linear-to-br from-accent-200/30 via-blue-200/25 to-violet-200/20 rounded-full blur-[140px]"
+          />
+          <motion.div
+            animate={{
+              scale: [1, 1.15, 1],
+              opacity: [0.15, 0.25, 0.15],
+            }}
+            transition={{
+              duration: 10,
+              repeat: Infinity,
+              ease: "easeInOut",
+              delay: 2,
+            }}
+            className="absolute bottom-[5%] left-[15%] w-[45%] h-[35%] bg-linear-to-tr from-violet-200/20 to-blue-200/10 rounded-full blur-[120px]"
+          />
+          <motion.div
+            animate={{
+              scale: [1, 1.08, 1],
+              opacity: [0.1, 0.2, 0.1],
+            }}
+            transition={{
+              duration: 12,
+              repeat: Infinity,
+              ease: "easeInOut",
+              delay: 4,
+            }}
+            className="absolute top-[30%] right-[5%] w-[30%] h-[25%] bg-linear-to-bl from-orange-200/15 to-amber-200/10 rounded-full blur-[100px]"
+          />
+        </div>
+
         <motion.div
           style={{ y: heroY, opacity: heroOpacity, scale: heroScale }}
-          className="text-center max-w-5xl space-y-8"
+          className="text-center max-w-5xl space-y-10 relative z-10"
         >
+          {/* Badge */}
           <motion.div
-            initial={{ opacity: 0, scale: 0.8 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ delay: 0.4, type: "spring", stiffness: 100 }}
-            className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary-200/10 border border-primary-500/20 text-xs font-bold text-primary-600"
+            initial={{ opacity: 0, y: 20, filter: "blur(10px)" }}
+            animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
+            transition={{
+              delay: 0.2,
+              duration: 0.8,
+              ease: [0.22, 1, 0.36, 1],
+            }}
           >
-            <Sparkles className="w-3 h-3" /> AI-Powered Meeting Assistant
+            <span className="inline-flex items-center gap-2.5 px-4 py-2 bg-white/70 backdrop-blur-md rounded-full border border-text-200/50 shadow-sm">
+              <span className="relative flex h-2 w-2">
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75" />
+                <span className="relative inline-flex rounded-full h-2 w-2 bg-green-500" />
+              </span>
+              <span className="text-[13px] font-medium text-text-600">
+                Open Source & Free Forever
+              </span>
+            </span>
           </motion.div>
 
+          {/* Heading */}
           <motion.h1
-            initial={{ opacity: 0, y: 30 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.5, duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
-            className="text-6xl md:text-7xl lg:text-8xl font-extrabold tracking-tight text-text-900 leading-[1.1]"
+            initial={{ opacity: 0, y: 40, filter: "blur(10px)" }}
+            animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
+            transition={{
+              delay: 0.4,
+              duration: 0.9,
+              ease: [0.22, 1, 0.36, 1],
+            }}
+            className="text-[clamp(2.5rem,6vw,5rem)] tracking-tight text-text-900 leading-[1.08]"
+            style={{ fontFamily: "var(--font-dm-serif), Georgia, serif" }}
           >
-            Never miss a{" "}
-            <span className="bg-linear-to-r from-primary-600 to-primary-700 bg-clip-text text-transparent">
-              meeting detail
+            Your meetings,
+            <br />
+            <span className="relative">
+              <span className="text-accent-600">remembered</span>
+              <motion.span
+                initial={{ scaleX: 0 }}
+                animate={{ scaleX: 1 }}
+                transition={{
+                  delay: 1.2,
+                  duration: 0.6,
+                  ease: [0.22, 1, 0.36, 1],
+                }}
+                className="absolute -bottom-2 left-0 right-0 h-[3px] bg-accent-400/30 rounded-full origin-left"
+              />
             </span>{" "}
-            again
+            perfectly
           </motion.h1>
 
+          {/* Subheadline */}
           <motion.p
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.7, duration: 0.8 }}
-            className="text-xl md:text-2xl text-text-700 max-w-3xl mx-auto font-medium leading-relaxed"
+            initial={{ opacity: 0, y: 25, filter: "blur(8px)" }}
+            animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
+            transition={{
+              delay: 0.6,
+              duration: 0.8,
+              ease: [0.22, 1, 0.36, 1],
+            }}
+            className="text-lg md:text-xl text-text-500 max-w-2xl mx-auto leading-relaxed font-normal"
           >
-            Shadow Bot silently joins your meetings, records it, and delivers
-            instant transcripts, AI summaries, and semantic search, powered by
-            Gemini and ElevenLabs.
+            An AI companion that silently joins your meetings, records every
+            moment, and turns conversations into transcripts, summaries, and
+            searchable insights.
           </motion.p>
 
+          {/* CTAs */}
+          <motion.div
+            initial={{ opacity: 0, y: 25, filter: "blur(8px)" }}
+            animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
+            transition={{
+              delay: 0.8,
+              duration: 0.8,
+              ease: [0.22, 1, 0.36, 1],
+            }}
+            className="flex flex-col sm:flex-row items-center justify-center gap-4 pt-2"
+          >
+            <Link
+              href="/login"
+              className="group bg-text-900 text-white px-8 py-4 rounded-full font-semibold text-base hover:bg-text-800 active:scale-[0.97] transition-all shadow-lg shadow-text-900/10 flex items-center gap-2.5"
+            >
+              Start Recording Free
+              <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform duration-200" />
+            </Link>
+            <a
+              href="https://github.com"
+              target="_blank"
+              rel="noreferrer"
+              className="group flex items-center gap-2.5 px-8 py-4 rounded-full font-semibold text-base text-text-700 bg-white/80 backdrop-blur-sm border border-text-200/70 hover:border-text-300 hover:shadow-lg hover:shadow-text-900/5 transition-all duration-200"
+            >
+              <RiGithubFill className="w-5 h-5" />
+              View on GitHub
+            </a>
+          </motion.div>
+
+          {/* Stats Bar */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.9 }}
-            className="flex flex-col sm:flex-row gap-4 justify-center pt-6"
+            transition={{ delay: 1.1, duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
+            className="flex items-center justify-center gap-10 sm:gap-16 pt-8"
           >
-            <Link
-              href="/signup"
-              className="px-8 py-4 bg-linear-to-r from-primary-600 to-primary-700 text-white rounded-xl text-base font-bold hover:opacity-90 transition-all shadow-xl inline-flex items-center justify-center gap-2"
-            >
-              Get Started Free <ArrowRight className="w-4 h-4" />
-            </Link>
-            <Link
-              href="https://github.com/rahmatdeep/shadow-bot"
-              target="_blank"
-              className="px-8 py-4 bg-white border border-text-900/10 text-primary-600 rounded-xl text-base font-bold hover:bg-primary-50 transition-all inline-flex items-center justify-center gap-2 group"
-            >
-              <RiGithubFill className="w-5 h-5 text-primary-600 group-hover:text-primary-800 transition-colors" />
-              View on GitHub
-            </Link>
-          </motion.div>
-
-          {/* Hero Visual with Scroll Animation */}
-          <motion.div
-            initial={{ opacity: 0, scale: 0.95 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ delay: 1.1, duration: 0.8 }}
-            className="mt-16 relative"
-          >
-            <div className="bg-white border border-text-900/10 rounded-2xl shadow-2xl p-8 max-w-4xl mx-auto">
-              <div className="aspect-video bg-secondary-100 rounded-xl flex items-center justify-center relative overflow-hidden border border-text-900/5">
-                <div className="absolute inset-0 bg-linear-to-br from-primary-500/10 to-primary-700/5" />
-                <div className="relative z-10 flex items-center gap-3">
-                  <div className="w-3 h-3 rounded-full bg-red-500 animate-pulse" />
-                  <span className="text-sm font-bold text-text-700 uppercase tracking-wider">
-                    Recording in Progress
-                  </span>
-                </div>
+            {stats.map((stat) => (
+              <div key={stat.label} className="text-center">
+                <p
+                  className="text-2xl sm:text-3xl text-text-900 tracking-tight"
+                  style={{ fontFamily: "var(--font-dm-serif), Georgia, serif" }}
+                >
+                  {stat.value}
+                </p>
+                <p className="text-xs text-text-400 font-medium uppercase tracking-widest mt-1">
+                  {stat.label}
+                </p>
               </div>
-            </div>
+            ))}
           </motion.div>
         </motion.div>
       </section>
 
-      {/* Features Section with Stagger */}
-      <section className="py-32 px-6 bg-secondary-50">
-        <div className="max-w-7xl mx-auto">
+      {/* ─── How It Works (Visual Process) ─── */}
+      <section id="how-it-works" className="py-32 px-6 relative">
+        <div className="max-w-5xl mx-auto">
           <motion.div
-            initial={{ opacity: 0, y: 50 }}
+            initial={{ opacity: 0, y: 30 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true, margin: "-100px" }}
-            transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
-            className="text-center mb-20"
+            transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
+            className="text-center max-w-2xl mx-auto mb-20"
           >
-            <h2 className="text-4xl md:text-5xl font-extrabold text-text-900 mb-4">
-              Everything you need
-            </h2>
-            <p className="text-xl text-text-700 max-w-2xl mx-auto">
-              From recording to insights, Shadow Bot handles it all
+            <p className="text-sm font-semibold text-accent-600 uppercase tracking-widest mb-4">
+              How it works
             </p>
+            <h2
+              className="text-4xl md:text-5xl text-text-900 tracking-tight leading-tight"
+              style={{ fontFamily: "var(--font-dm-serif), Georgia, serif" }}
+            >
+              Three steps to perfect recall
+            </h2>
           </motion.div>
 
-          <div className="grid md:grid-cols-2 gap-6 max-w-5xl mx-auto">
+          <div className="grid md:grid-cols-3 gap-8">
             {[
               {
-                icon: Video,
-                title: "Auto Recording",
-                desc: "Bot joins your Google Meet automatically and captures everything in high quality.",
-                active: true,
-                delay: 0.1,
+                step: "01",
+                icon: Play,
+                title: "Paste your meeting link",
+                description:
+                  "Just drop your Google Meet link and hit join. Shadow Bot handles the rest.",
+                color: "text-blue-500",
+                bg: "bg-blue-50",
               },
               {
-                icon: FileText,
-                title: "AI Transcription",
-                desc: "ElevenLabs Scribe v2 delivers high-fidelity transcripts with near-perfect accuracy.",
-                active: true,
-                delay: 0.2,
+                step: "02",
+                icon: Mic,
+                title: "We record & transcribe",
+                description:
+                  "AI captures audio, generates transcripts, and creates structured summaries in real-time.",
+                color: "text-violet-500",
+                bg: "bg-violet-50",
               },
               {
+                step: "03",
                 icon: Sparkles,
-                title: "Smart Summaries",
-                desc: "Multi-stage Gemini Flash pipeline extracts structured action items, decisions, and detailed prose summaries.",
-                active: true,
-                delay: 0.3,
+                title: "Chat with your meetings",
+                description:
+                  "Ask questions, get action items, search across all your meetings with natural language.",
+                color: "text-amber-500",
+                bg: "bg-amber-50",
               },
-              {
-                icon: RiSearchLine,
-                title: "Semantic Search",
-                desc: "Find what you need with vector search. Ask 'What was the budget?' and get answers from all your meetings.",
-                active: true,
-                delay: 0.4,
-              },
-            ].map((feature, idx) => (
+            ].map((item, index) => (
               <motion.div
-                key={idx}
-                initial={{ opacity: 0, y: 50, rotateX: 10 }}
-                whileInView={{ opacity: 1, y: 0, rotateX: 0 }}
-                viewport={{ once: true, margin: "-50px" }}
+                key={item.step}
+                initial={{ opacity: 0, y: 40 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true, margin: "-60px" }}
                 transition={{
-                  delay: feature.delay,
-                  duration: 0.8,
+                  delay: index * 0.15,
+                  duration: 0.6,
                   ease: [0.22, 1, 0.36, 1],
                 }}
-                whileHover={{ y: -8, transition: { duration: 0.2 } }}
-                className="bg-white border border-text-900/10 rounded-xl p-6 space-y-4 hover:border-primary-600 hover:shadow-lg transition-all relative"
+                className="relative"
               >
-                {!feature.active && (
-                  <div className="absolute top-6 right-6 px-3 py-1 rounded-full bg-primary-500/10 border border-primary-500/20 text-xs font-bold text-primary-800 uppercase">
-                    Coming Soon
-                  </div>
+                {/* Connector Line */}
+                {index < 2 && (
+                  <div className="hidden md:block absolute top-12 left-[calc(100%+1rem)] w-[calc(100%-2rem)] h-px bg-text-200/60 -translate-x-1/2" />
                 )}
-                <div
-                  className={`w-14 h-14 rounded-xl ${feature.active ? "bg-linear-to-br from-primary-600 to-primary-700" : "bg-secondary-200 border border-text-900/10"} flex items-center justify-center shadow-md`}
-                >
-                  {feature.icon === RiSearchLine ? (
-                    <RiSearchLine
-                      className={`w-7 h-7 ${feature.active ? "text-white" : "text-text-600"}`}
-                    />
-                  ) : (
-                    <feature.icon
-                      className={`w-7 h-7 ${feature.active ? "text-white" : "text-text-600"}`}
-                    />
-                  )}
-                </div>
-                <div>
-                  <h3 className="text-2xl font-bold text-text-900 mb-2">
-                    {feature.title}
-                  </h3>
-                  <p className="text-text-700 leading-relaxed">{feature.desc}</p>
+
+                <div className="text-center space-y-5">
+                  <div
+                    className={`w-20 h-20 rounded-3xl ${item.bg} ${item.color} flex items-center justify-center mx-auto shadow-sm border border-white`}
+                  >
+                    <item.icon className="w-8 h-8" />
+                  </div>
+                  <div className="space-y-2">
+                    <span className="text-[11px] font-bold text-text-300 uppercase tracking-[0.2em]">
+                      Step {item.step}
+                    </span>
+                    <h3 className="text-xl font-bold text-text-900 tracking-tight">
+                      {item.title}
+                    </h3>
+                    <p className="text-sm text-text-500 leading-relaxed max-w-xs mx-auto">
+                      {item.description}
+                    </p>
+                  </div>
                 </div>
               </motion.div>
             ))}
@@ -260,211 +416,129 @@ export function LandingPage() {
         </div>
       </section>
 
-      {/* How It Works - Scrollytelling */}
-      <section className="py-32 px-6 bg-secondary-100">
-        <div className="max-w-5xl mx-auto">
+      {/* ─── Features Section ─── */}
+      <section id="features" className="py-32 px-6 relative">
+        {/* Subtle bg glow */}
+        <div className="absolute inset-0 pointer-events-none overflow-hidden">
+          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[70%] max-w-3xl h-[50%] bg-linear-to-br from-accent-100/15 via-transparent to-violet-100/10 rounded-full blur-[140px]" />
+        </div>
+
+        <div className="max-w-6xl mx-auto relative z-10">
           <motion.div
-            initial={{ opacity: 0, y: 50 }}
+            initial={{ opacity: 0, y: 30 }}
             whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.8 }}
-            className="text-center mb-20"
+            viewport={{ once: true, margin: "-100px" }}
+            transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
+            className="text-center max-w-2xl mx-auto mb-20"
           >
-            <h2 className="text-4xl md:text-5xl font-extrabold text-text-900 mb-4">
-              Simple as 1, 2, 3
-            </h2>
-            <p className="text-xl text-text-700">
-              Get started in under a minute
+            <p className="text-sm font-semibold text-accent-600 uppercase tracking-widest mb-4">
+              Features
             </p>
+            <h2
+              className="text-4xl md:text-5xl text-text-900 tracking-tight leading-tight"
+              style={{ fontFamily: "var(--font-dm-serif), Georgia, serif" }}
+            >
+              Everything you need to capture meetings
+            </h2>
           </motion.div>
 
-          <div className="space-y-32">
-            {/* Step 1 */}
-            <motion.div
-              initial={{ opacity: 0, x: -100 }}
-              whileInView={{ opacity: 1, x: 0 }}
-              viewport={{ once: true, margin: "-100px" }}
-              transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
-              className="flex flex-col md:flex-row items-center gap-12"
-            >
+          {/* Feature Cards */}
+          <div className="grid md:grid-cols-2 gap-5">
+            {features.map((feature, index) => (
               <motion.div
-                whileInView={{ scale: [1, 1.05, 1] }}
-                viewport={{ once: true }}
-                transition={{ delay: 0.3, duration: 0.6 }}
-                className="flex-1 space-y-4"
+                key={feature.title}
+                initial={{ opacity: 0, y: 40 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true, margin: "-80px" }}
+                transition={{
+                  delay: index * 0.1,
+                  duration: 0.6,
+                  ease: [0.22, 1, 0.36, 1],
+                }}
+                className="group relative"
               >
-                <div className="inline-flex items-center justify-center w-12 h-12 rounded-full bg-linear-to-r from-primary-600 to-primary-700 text-white font-extrabold text-xl shadow-lg">
-                  1
-                </div>
-                <h3 className="text-3xl font-bold text-text-900">
-                  Paste your meeting link   
-                </h3>
-                <p className="text-lg text-text-700 leading-relaxed">
-                  Copy your Google Meet and paste it into Shadow Bot. That's it.
-                </p>
-              </motion.div>
-              <motion.div
-                initial={{ opacity: 0, scale: 0.9 }}
-                whileInView={{ opacity: 1, scale: 1 }}
-                viewport={{ once: true }}
-                transition={{ delay: 0.4, duration: 0.6 }}
-                className="flex-1 bg-white border border-text-900/10 rounded-xl p-6 h-48 flex items-center justify-center shadow-md"
-              >
-                <div className="w-full h-12 bg-secondary-100 rounded-lg flex items-center px-4 gap-3 border border-text-900/5">
-                  <Video className="w-5 h-5 text-primary-600" />
-                  <div className="h-2 flex-1 bg-secondary-200 rounded-full" />
-                </div>
-              </motion.div>
-            </motion.div>
+                {/* Hover glow */}
+                <div
+                  className={`absolute -inset-px bg-linear-to-br ${feature.accent} rounded-[28px] blur-xl opacity-0 group-hover:opacity-100 transition-opacity duration-500`}
+                />
 
-            {/* Step 2 */}
-            <motion.div
-              initial={{ opacity: 0, x: 100 }}
-              whileInView={{ opacity: 1, x: 0 }}
-              viewport={{ once: true, margin: "-100px" }}
-              transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
-              className="flex flex-col md:flex-row-reverse items-center gap-12"
-            >
-              <motion.div
-                whileInView={{ scale: [1, 1.05, 1] }}
-                viewport={{ once: true }}
-                transition={{ delay: 0.3, duration: 0.6 }}
-                className="flex-1 space-y-4"
-              >
-                <div className="inline-flex items-center justify-center w-12 h-12 rounded-full bg-linear-to-r from-primary-600 to-primary-700 text-white font-extrabold text-xl shadow-lg">
-                  2
-                </div>
-                <h3 className="text-3xl font-bold text-text-900">
-                  Bot joins and records
-                </h3>
-                <p className="text-lg text-text-700 leading-relaxed">
-                  Shadow Bot enters the call and starts capturing everything
-                  silently.
-                </p>
-              </motion.div>
-              <motion.div
-                initial={{ opacity: 0, scale: 0.9 }}
-                whileInView={{ opacity: 1, scale: 1 }}
-                viewport={{ once: true }}
-                transition={{ delay: 0.4, duration: 0.6 }}
-                className="flex-1 bg-white border border-text-900/10 rounded-xl p-6 h-48 flex items-center justify-center shadow-md"
-              >
-                <div className="flex items-center gap-4">
-                  <div className="w-12 h-12 rounded-full bg-linear-to-br from-primary-600 to-primary-800 flex items-center justify-center shadow-md">
-                    <RiGhostSmileLine className="w-6 h-6 text-white" />
+                <div className="relative p-8 bg-white/80 backdrop-blur-sm rounded-3xl border border-text-200/50 hover:border-text-300/60 hover:shadow-xl hover:shadow-text-900/5 transition-all duration-300">
+                  <div className="w-12 h-12 rounded-2xl bg-secondary-200 flex items-center justify-center mb-6 group-hover:bg-accent-50 group-hover:text-accent-600 text-text-500 transition-all duration-300 group-hover:scale-110 group-hover:rotate-3">
+                    <feature.icon className="w-6 h-6" />
                   </div>
-                  <div className="space-y-2">
-                    <div className="h-2 w-32 bg-secondary-200 rounded-full" />
-                    <div className="flex items-center gap-2">
-                      <div className="w-2 h-2 rounded-full bg-red-500 animate-pulse" />
-                      <div className="h-2 w-20 bg-red-500/20 rounded-full" />
-                    </div>
-                  </div>
+                  <h3 className="text-xl font-bold text-text-900 mb-3 tracking-tight">
+                    {feature.title}
+                  </h3>
+                  <p className="text-text-500 leading-relaxed text-[15px]">
+                    {feature.description}
+                  </p>
                 </div>
               </motion.div>
-            </motion.div>
-
-            {/* Step 3 */}
-            <motion.div
-              initial={{ opacity: 0, x: -100 }}
-              whileInView={{ opacity: 1, x: 0 }}
-              viewport={{ once: true, margin: "-100px" }}
-              transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
-              className="flex flex-col md:flex-row items-center gap-12"
-            >
-              <motion.div
-                whileInView={{ scale: [1, 1.05, 1] }}
-                viewport={{ once: true }}
-                transition={{ delay: 0.3, duration: 0.6 }}
-                className="flex-1 space-y-4"
-              >
-                <div className="inline-flex items-center justify-center w-12 h-12 rounded-full bg-linear-to-r from-primary-600 to-primary-700 text-white font-extrabold text-xl shadow-lg">
-                  3
-                </div>
-                <h3 className="text-3xl font-bold text-text-900">
-                  Get your insights
-                </h3>
-                <p className="text-lg text-text-700 leading-relaxed">
-                  Receive structured summaries, tags, and valid JSON outputs.
-                  Share with your team instantly.
-                </p>
-              </motion.div>
-              <motion.div
-                initial={{ opacity: 0, scale: 0.9 }}
-                whileInView={{ opacity: 1, scale: 1 }}
-                viewport={{ once: true }}
-                transition={{ delay: 0.4, duration: 0.6 }}
-                className="flex-1 bg-white border border-text-900/10 rounded-xl p-6 h-48 flex flex-col justify-center gap-3 shadow-md"
-              >
-                <div className="flex items-center gap-3">
-                  <Sparkles className="w-5 h-5 text-primary-600" />
-                  <div className="h-2 flex-1 bg-primary-600/20 rounded-full" />
-                </div>
-                <div className="space-y-2 pl-8">
-                  <div className="h-2 w-full bg-secondary-200 rounded-full" />
-                  <div className="h-2 w-3/4 bg-secondary-200 rounded-full" />
-                </div>
-              </motion.div>
-            </motion.div>
+            ))}
           </div>
         </div>
       </section>
 
-      {/* Final CTA with Scale */}
-      <section className="py-32 px-6 bg-linear-to-b from-secondary-100 to-primary-500/10">
+      {/* ─── CTA Section ─── */}
+      <section className="py-32 px-6 relative">
+        <div className="absolute inset-0 pointer-events-none">
+          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[60%] max-w-2xl h-[60%] bg-linear-to-br from-accent-100/20 via-blue-100/10 to-violet-100/15 rounded-full blur-[140px]" />
+        </div>
+
         <motion.div
-          initial={{ opacity: 0, scale: 0.9 }}
-          whileInView={{ opacity: 1, scale: 1 }}
-          viewport={{ once: true }}
+          initial={{ opacity: 0, y: 40 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true, margin: "-100px" }}
           transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
-          className="max-w-4xl mx-auto text-center space-y-8"
+          className="max-w-3xl mx-auto text-center relative z-10"
         >
-          <h2 className="text-5xl md:text-6xl font-extrabold text-text-900 leading-tight">
-            Ready to leverage your meetings?
-          </h2>
-          <p className="text-2xl text-text-700">
-            Join teams who never miss a detail
-          </p>
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ delay: 0.3 }}
-            className="flex flex-col sm:flex-row gap-4 justify-center pt-6"
+          <h2
+            className="text-4xl md:text-5xl text-text-900 tracking-tight leading-tight mb-6"
+            style={{ fontFamily: "var(--font-dm-serif), Georgia, serif" }}
           >
-            <Link
-              href="/signup"
-              className="px-8 py-4 bg-linear-to-r from-primary-600 to-primary-700 text-white rounded-xl text-base font-bold hover:opacity-90 transition-all shadow-xl inline-flex items-center justify-center gap-2"
-            >
-              Start Recording Free <ArrowRight className="w-4 h-4" />
-            </Link>
-            <Link
-              href="/login"
-              className="px-8 py-4 bg-secondary-200 border border-text-900/10 text-text-900 rounded-xl text-base font-bold hover:bg-secondary-300 transition-all"
-            >
-              Sign In
-            </Link>
-          </motion.div>
+            Ready to let your meetings work for you?
+          </h2>
+          <p className="text-lg text-text-500 max-w-xl mx-auto mb-10 leading-relaxed">
+            Join thousands of teams who never miss an action item, decision, or
+            key insight.
+          </p>
+          <Link
+            href="/login"
+            className="group inline-flex items-center gap-2.5 bg-text-900 text-white px-10 py-4 rounded-full font-semibold text-base hover:bg-text-800 active:scale-[0.97] transition-all shadow-lg shadow-text-900/10"
+          >
+            Get Started — It&apos;s Free
+            <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform duration-200" />
+          </Link>
         </motion.div>
       </section>
 
-      {/* Footer */}
-      <footer className="py-4 bg-primary-500/10">
-        <div className="max-w-7xl mx-auto px-6 flex justify-center">
-          <div className="flex items-center gap-2 text-sm text-text-500">
-            <span>Made with</span>
-            <span className="text-primary-600">
-              <GoHeartFill />
-            </span>
-            <span>by</span>
-            <Link
-              href="https://github.com/rahmatdeep"
-              className="text-primary-600 font-bold hover:underline"
-              target="_blank"
+      {/* ─── Footer ─── */}
+      <footer className="py-12 px-6 border-t border-text-200/40">
+        <div className="max-w-6xl mx-auto flex flex-col md:flex-row items-center justify-between gap-6">
+          <div className="flex items-center gap-1.5">
+            <span
+              className="text-lg tracking-tight text-text-800"
+              style={{ fontFamily: "var(--font-dm-serif), Georgia, serif" }}
             >
-              @rahmatdeep
-            </Link>
+              Shadow
+            </span>
+            <span className="text-lg font-semibold tracking-tight text-text-400">
+              Bot
+            </span>
           </div>
+          <p className="text-sm text-text-400 flex items-center gap-1.5">
+            Made with <GoHeartFill className="w-3.5 h-3.5 text-red-400" /> for
+            better meetings
+          </p>
+          <a
+            href="https://github.com"
+            target="_blank"
+            rel="noreferrer"
+            className="text-sm text-text-400 hover:text-text-700 transition-colors flex items-center gap-1.5"
+          >
+            <RiGithubFill className="w-4 h-4" />
+            GitHub
+          </a>
         </div>
       </footer>
     </div>
