@@ -1,9 +1,9 @@
 "use client";
 
 import { signOut } from "next-auth/react";
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { RiLogoutBoxRLine } from "react-icons/ri";
+import { RiLogoutBoxRLine, RiUserLine, RiSettings4Line } from "react-icons/ri";
 
 interface UserProfileBadgeProps {
   user?: {
@@ -11,58 +11,89 @@ interface UserProfileBadgeProps {
     email?: string | null;
     image?: string | null;
   };
+  position?: "top" | "bottom";
 }
 
-export function UserProfileBadge({ user }: UserProfileBadgeProps) {
+export function UserProfileBadge({
+  user,
+  position = "bottom",
+}: UserProfileBadgeProps) {
   const [isOpen, setIsOpen] = useState(false);
+  const containerRef = useRef<HTMLDivElement>(null);
+
+  // Click outside to close
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (
+        containerRef.current &&
+        !containerRef.current.contains(event.target as Node)
+      ) {
+        setIsOpen(false);
+      }
+    }
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
 
   if (!user) return null;
 
   return (
-    <div className="relative">
+    <div className="relative" ref={containerRef}>
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="flex items-center gap-3 px-3 py-2 rounded-full bg-white/70 backdrop-blur-md border border-text-200/50 hover:bg-white hover:border-text-300 transition-all shadow-sm cursor-pointer"
+        className="flex items-center gap-3 px-3 py-2 rounded-full bg-white/70 backdrop-blur-md border border-text-200/50 hover:bg-white hover:border-text-300 transition-all shadow-sm cursor-pointer group active:scale-95"
       >
         {user.image ? (
           <img
             src={user.image}
             alt={user.name || "User"}
-            className="w-7 h-7 rounded-full object-cover ring-2 ring-text-200"
+            className="w-7 h-7 rounded-full object-cover ring-2 ring-text-100 group-hover:ring-text-200 transition-all"
           />
         ) : (
-          <div className="w-7 h-7 rounded-full bg-text-200 flex items-center justify-center text-text-600 text-xs font-semibold">
+          <div className="w-7 h-7 rounded-full bg-text-100 flex items-center justify-center text-text-500 text-xs font-semibold group-hover:bg-text-200 transition-all">
             {user.name?.charAt(0) || "?"}
           </div>
         )}
         <span className="text-sm font-semibold text-text-700 hidden sm:inline max-w-[120px] truncate">
-          {user.name || "User"}
+          {user.name?.split(" ")[0] || "User"}
         </span>
       </button>
 
       <AnimatePresence>
         {isOpen && (
           <motion.div
-            initial={{ opacity: 0, y: 8, scale: 0.95 }}
+            initial={{
+              opacity: 0,
+              y: position === "bottom" ? 8 : -8,
+              scale: 0.95,
+            }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
-            exit={{ opacity: 0, y: 8, scale: 0.95 }}
-            transition={{ duration: 0.15 }}
-            className="absolute right-0 top-full mt-2 w-56 bg-white rounded-2xl border border-text-200/60 shadow-xl shadow-text-900/5 overflow-hidden z-50"
+            exit={{
+              opacity: 0,
+              y: position === "bottom" ? 8 : -8,
+              scale: 0.95,
+            }}
+            transition={{ duration: 0.2, ease: [0.23, 1, 0.32, 1] }}
+            className={`absolute right-0 ${
+              position === "bottom" ? "top-full mt-2" : "bottom-full mb-2"
+            } w-64 bg-white/95 backdrop-blur-2xl rounded-3xl border border-text-200/60 shadow-2xl shadow-text-900/10 overflow-hidden z-100`}
           >
-            <div className="px-4 py-3 border-b border-text-200/50">
-              <p className="text-sm font-semibold text-text-900 truncate">
+            {/* Header info */}
+            <div className="px-5 py-4 border-b border-text-100/50 bg-secondary-50/30">
+              <p className="text-sm font-bold text-text-900 truncate">
                 {user.name}
               </p>
-              <p className="text-xs text-text-400 truncate mt-0.5">
+              <p className="text-[11px] font-medium text-text-400 truncate mt-0.5 tracking-tight">
                 {user.email}
               </p>
             </div>
-            <div className="p-2">
+
+            <div className="p-1.5">
               <button
                 onClick={() => signOut({ callbackUrl: "/" })}
-                className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-text-600 hover:bg-red-50 hover:text-red-600 transition-colors"
+                className="w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-sm font-semibold text-red-500 hover:bg-red-50 transition-all group active:scale-[0.98]"
               >
-                <RiLogoutBoxRLine className="w-4 h-4" />
+                <RiLogoutBoxRLine className="w-4 h-4 text-red-400 group-hover:text-red-600 transition-colors" />
                 Sign Out
               </button>
             </div>

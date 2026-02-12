@@ -252,7 +252,7 @@ export function GlobalChat({ session }: { session: any }) {
 
             {/* Bottom */}
             <div className="p-4 border-t border-text-200/30">
-              <UserProfileBadge user={session?.user} />
+              <UserProfileBadge user={session?.user} position="top" />
             </div>
           </motion.div>
         )}
@@ -440,7 +440,7 @@ export function GlobalChat({ session }: { session: any }) {
                         ease: "easeInOut",
                       },
                     }}
-                    className="absolute -inset-6 rounded-[3rem] bg-linear-to-r from-accent-300/15 via-blue-300/10 to-violet-300/15 blur-[40px] pointer-events-none"
+                    className="absolute -inset-6 rounded-[3rem] bg-linear-to-r from-accent-300/15 via-blue-300/10 to-violet-300/15 blur-2xl pointer-events-none"
                   />
                 )}
               </AnimatePresence>
